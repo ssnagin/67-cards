@@ -1,0 +1,6 @@
+### POSTGRES .env ###
+credentials.env
+
+
+### REDIS ###
+redis_data/*
