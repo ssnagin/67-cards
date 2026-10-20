@@ -40,7 +40,7 @@ jobs:
 
       # 4. Собираем чистый .jar файл приложения
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: backend/gradlew -p backend clean build
 
       # 5. Создаем рабочую директорию на сервере и копируем туда файлы (jar + compose)
       - name: Copy files via SSH (SCP)
@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "build/libs/app.jar,docker-compose.yml,Dockerfile,.dockerignore,redis.conf,credentials.env"
+          source: "backend/build/libs/app.jar,docker-compose.yml,Dockerfile,.dockerignore,redis.conf,credentials.env"
           target: "~/67-cards"
           strip_components: 0 # Сохраняет структуру папок build/libs/ для Dockerfile
 
@@ -65,7 +65,7 @@ jobs:
           port: ${{ secrets.PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd ~/67-cards/
+            cd ~/67-cards
             # Останавливаем старые контейнеры, если они были запущены
             docker compose --env-file credentials.env down --remove-orphans
 
