@@ -15,6 +15,9 @@ export default defineNuxtConfig({
     baseURL: "/67-cards/"
   },
 
+  experimental: {
+    payloadExtraction: false,
+  },
 
   runtimeConfig: {
     pulbic: {
