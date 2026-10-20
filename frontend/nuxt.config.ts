@@ -13,5 +13,13 @@ export default defineNuxtConfig({
 
   app: {
     baseURL: "/67-cards/"
-  } 
+  },
+
+
+  runtimeConfig: {
+    pulbic: {
+      apiBase: 'http://localhost:16768',
+      apiMode: 'mock'
+    }
+  }
 })
