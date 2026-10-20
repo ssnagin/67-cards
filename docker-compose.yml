@@ -1,0 +1,11 @@
+services:
+
+  spring-app:
+    build .
+    container_name: 67cards_spring
+    ports:
+      - "127.0.0.1:16768:8080"
+
+    env_file:
+      - credentials.env
+    restart: on-failure
