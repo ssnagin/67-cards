@@ -20,7 +20,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    pulbic: {
+    public: {
       apiBase: 'http://localhost:16768',
       apiMode: 'mock'
     }

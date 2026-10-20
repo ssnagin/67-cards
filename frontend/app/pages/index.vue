@@ -169,7 +169,7 @@ function joinGame() {
       <header class="topbar">
         <label class="search-box">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
-          <input v-model="search" type="search" placeholder="Поиск мероприятий и карточек..." aria-label="Поиск" />
+          <input v-model="search" type="search" placeholder="Поиск мероприятий и карточек..." aria-label="Поиск">
           <kbd>⌘ K</kbd>
         </label>
         <div class="topbar-actions">
@@ -187,14 +187,14 @@ function joinGame() {
       <section class="hero">
         <div class="hero-copy">
           <div class="eyebrow"><span class="eyebrow-dot" /> ПЛАТФОРМА ДЛЯ ИГР И ИДЕЙ</div>
-          <h1>Создавайте игры.<br />Объединяйте людей.</h1>
+          <h1>Создавайте игры.<br>Объединяйте людей.</h1>
           <p>Викторины, аукционы, рынки прогнозов и многое другое. Соберите своё интерактивное мероприятие — от идеи до финального счёта.</p>
           <div class="hero-actions">
             <button class="button button-primary" @click="createEvent"><span>＋</span> Создать мероприятие</button>
             <button class="button button-ghost" @click="showJoin = !showJoin">Присоединиться <span>↗</span></button>
           </div>
           <form v-if="showJoin" class="join-form" @submit.prevent="joinGame">
-            <input v-model="joinCode" maxlength="12" placeholder="Код комнаты" aria-label="Код игровой комнаты" />
+            <input v-model="joinCode" maxlength="12" placeholder="Код комнаты" aria-label="Код игровой комнаты">
             <button class="button button-primary" type="submit">Войти</button>
           </form>
           <div class="hero-footnote"><span class="tiny-check">✓</span> Игрокам не нужна регистрация</div>

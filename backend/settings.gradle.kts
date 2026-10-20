@@ -1,1 +1,1 @@
-rootProject.name = "nosql-sem5-lab1"
+rootProject.name = "67-cards"
