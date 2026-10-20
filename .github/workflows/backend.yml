@@ -62,7 +62,7 @@ jobs:
           port: ${{ secrets.PORT }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd ~/67-cards
+            cd ~/67-cards/frontend
             # Останавливаем старые контейнеры, если они были запущены
             docker compose --env-file credentials.env down --remove-orphans
 
