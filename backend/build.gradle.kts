@@ -21,24 +21,24 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     // Redis
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.redisson:redisson:4.7.0")
-    testImplementation("org.testcontainers:testcontainers")
-    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    // implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    // implementation("org.redisson:redisson:4.7.0")
+    // testImplementation("org.testcontainers:testcontainers")
+    // testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     
     // Swagger
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+    // implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
 
     // Lombok
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    // compileOnly("org.projectlombok:lombok")
+    // annotationProcessor("org.projectlombok:lombok")
 
     // JPA (postgres)
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    runtimeOnly("org.postgresql:postgresql")
+    // implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // runtimeOnly("org.postgresql:postgresql")
 
     // Validation (RegisterRequest/LoginRequest)
-    implementation("org.springframework.boot:spring-boot-starter-validation")
+    // implementation("org.springframework.boot:spring-boot-starter-validation")
 
 }
 
