@@ -4,3 +4,6 @@ credentials.env
 
 ### REDIS ###
 redis_data/*
+
+### PLANNING (TEMP) ###
+PLAN_TEMP.md
