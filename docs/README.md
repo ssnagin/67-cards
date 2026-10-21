@@ -9,7 +9,8 @@
 
 ## Дизайн
 
-- [`../Designs/FIGMA_DESIGN_REQUIREMENTS.md`](../Designs/FIGMA_DESIGN_REQUIREMENTS.md) — состав Figma-файлов, карта экранов и состояний, требования к дизайн-системе, прототипам, адаптивности и передаче макетов в разработку.
+- [`design/DESIGN.md`](design/DESIGN.md) — состав FigCraft-файлов, карта экранов и состояний, требования к дизайн-системе, прототипам, адаптивности и передаче макетов в разработку.
+- `design/99_Drafts_and_Archive.figcraft` — исследования и неутверждённые визуальные направления. Страница `Moodboard` содержит референсы владельца, а страница `01 — Web style / Dark Neon Editorial` — прикладной web style guide, собранный по этому мудборду: foundations, компоненты, desktop-пример и mobile live-сценарий. Ранее подготовленные Ink & Signal, Grid Play и Culture Club сохранены только как отклонённый архив.
 
 ## Зафиксированные вопросы
 
