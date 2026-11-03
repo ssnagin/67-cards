@@ -1,0 +1,34 @@
+// USER И ЕГО СВЯЗУЮЩИЕ
+
+Project 67Cards {
+    database_type: 'PostgreSQL'
+    Note: 'Какое-то описание'
+}
+
+Table 67Cards.User {
+    id long [pk, increment]
+    username text
+    email text
+    password text
+    role 67Cards.UserRoles [default: 'user']
+    created_at timestamp [default: `now()`]
+    updated_at timestamp [default: `now()`]
+
+    Note {
+        'Test Note'
+    }
+}
+
+Enum 67Cards.UserRoles {
+    admin
+    user
+}
+
+Table 67Cards.Session {
+    id long [pk, increment]
+}
+
+Table 67Cards.Card {
+    id long [pk, increment]
+}
+

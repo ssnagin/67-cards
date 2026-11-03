@@ -1,0 +1,56 @@
+{
+  "version": "3.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "relationshipMode": "All",
+    "tablePositions": [
+      {
+        "name": "User",
+        "schemaName": "67Cards",
+        "x": 12,
+        "y": 1094.178092536096
+      },
+      {
+        "name": "Cards",
+        "schemaName": "67Cards",
+        "x": 12,
+        "y": 1408.12824415832
+      },
+      {
+        "name": "Session",
+        "schemaName": "67Cards",
+        "x": 12,
+        "y": 1660.178092536096
+      },
+      {
+        "name": "Card",
+        "schemaName": "67Cards",
+        "x": 12,
+        "y": 1774.178092536096
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "role_id"
+        ],
+        "firstTableName": "User",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "UserRoles",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      }
+    ]
+  },
+  "views": {}
+}
