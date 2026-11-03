@@ -5,18 +5,45 @@ Project 67Cards {
     Note: 'Какое-то описание'
 }
 
-Table 67Cards.User {
+Table 67Cards.user {
     id long [pk, increment]
-    username text
-    email text
-    password text
+    username text [not null]
+    email text [not null]
+    password_hash text [not null]
     role 67Cards.UserRoles [default: 'user']
-    created_at timestamp [default: `now()`]
-    updated_at timestamp [default: `now()`]
+    created_at timestamptz [default: `now()`]
+    updated_at timestamptz [default: `now()`]
 
     Note {
         'Test Note'
     }
+}
+
+Table 67Cards.auth_sessions {
+    id uuid [pk, increment]
+    user_id long [pk, increment]
+
+    refresh_token_hash text [not null, unique]
+
+    created_at timestamptz [not null, default: `now()`]
+    expires_at timestamptz [not null]
+    revoked_at timestamptz
+}
+
+Ref auth_sessions_keys {
+    67Cards.user.id < 67Cards.auth_sessions.user_id
+}
+
+Table 67Cards.collections {
+    id long
+    user_id text
+    text json
+    created timestamptz
+    modified timestamptz
+}
+
+Table 67Cards.game_sessions {
+    
 }
 
 Enum 67Cards.UserRoles {
