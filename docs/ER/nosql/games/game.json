@@ -1,0 +1,51 @@
+[
+    {
+        "id": 12345,
+        "user_id": 123,
+        
+        "version": "1.0.0",
+
+        "type": "auction",
+
+        "game": {
+            "items": [
+                {
+                    "title": "Крутое авокадо",
+                    "image_id": "some link",
+                    "description": null,
+                    "start_price": 1000,
+                    "min_increment_step_by": 50
+                }
+            ]
+        },
+
+        "settings": {
+            
+        }
+    },
+    {
+        "id": 12345,
+        "user_id": 123,
+
+        "version": "1.0.0",
+
+        "type": "my_game",
+
+        "game": {},
+
+        "settings": {
+            
+        }
+    },
+    {
+        "version": "1.0.0",
+
+        "type": "victory_na",
+
+        "game": {},
+
+        "settings": {
+            
+        }
+    }
+]
