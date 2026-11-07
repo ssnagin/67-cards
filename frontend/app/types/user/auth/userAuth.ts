@@ -1,4 +1,8 @@
-export type AuthStatus = 'unknown' | 'authenticated' | 'guest' | 'error'
+export type AuthStatus =
+  | 'unknown'
+  | 'authenticated'
+  | 'guest'
+  | 'error'
 
 export type LoginData = {
   email: string
@@ -16,4 +20,10 @@ export type AuthResponse = {
     email: string
   }
   token: string
+}
+
+// Описание типа ответа от сервера для защиты от CSRF
+export type CsrfResponse = {
+    headerName: string
+    token: string
 }

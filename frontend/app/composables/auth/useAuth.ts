@@ -1,5 +1,6 @@
 import type { AuthStatus, LoginData, RegisterData } from "~/types/user/auth/userAuth"
 import type { User } from "~/types/user/user"
+import { apiEndpoints } from "~/utils/apiEndpoints"
 
 export default function useAuth() {
 
@@ -9,7 +10,7 @@ export default function useAuth() {
     const user = useState<User | null>('auth-user', () => null)
 
     // Статус, отражает состояние текущего пользователя
-    const status = useState<AuthStatus>('auth-status')
+    const status = useState<AuthStatus>('auth-status', () => 'unknown')
 
     const cookie = import.meta.server
         ? useRequestHeaders(['cookie']).cookie
@@ -23,6 +24,14 @@ export default function useAuth() {
     })
 
     async function refreshUser() {
+
+        try {
+            user.value = await api.request(apiEndpoints.auth.me)
+            status.value = 'authenticated'
+        } catch (error) {
+            
+        }
+
         // try {
         //   user.value = await api<User>('/api/auth/me')
         // }

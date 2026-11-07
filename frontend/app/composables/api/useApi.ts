@@ -1,7 +1,8 @@
 
 // Event-надзаглушка, которая ходит сама вместо постоянного вызова fetch. 
 
-import type { EndpointConfig } from "~/utils/apiEndpoints"
+import type { CsrfResponse } from "~/types/user/auth/userAuth"
+import { apiEndpoints, type EndpointConfig } from "~/utils/apiEndpoints"
 
 /*
   Пример:
@@ -36,26 +37,50 @@ import type { EndpointConfig } from "~/utils/apiEndpoints"
 */
 export const useApi = () => {
 
-  const _config = useRuntimeConfig()
+  const config = useRuntimeConfig()
 
-  const fetcher = $fetch // ... дописать
+  const fetcher = $fetch.create({
+    baseURL: config.public.apiBase,
 
-  // const fetcher = $fetch.create({
-  //   baseURL: config.public.apiBase,
-  //   onRequest({ options }) {
+    // Разрешаем браузеру отправлять cookie на API.
+    credentials: 'include',
 
-  //     if (token.value) {
-  //       options.headers = {
-  //         ...options.headers,
-  //         Authorization: `Bearer ${token.value}`
-  //       }
-  //     }
-  //   }
+    // При SSR передаём cookie пользователя в запрос к бэкенду.
+    headers: cookie ? { cookie } : undefined,
+  })
+
+  async function request<Body, Response>(
+    endpoint: EndpointConfig<Body, Response>,
+    ...args: Body extends undefined ? [] : [body: Body]
+  ): Promise<Response> {
+    
+    const body = args[0] as Record<string, unknown> | undefined
+    
+
+    // Для POST сначала получаем CSRF-токен.
+    // Маршрут и формат ответа должны быть реализованы на Spring.
+    let csrf: CsrfResponse | undefined
+
+    if (endpoint.method === 'POST') {
+      csrf = await fetcher<CsrfResponse>(apiEndpoints.auth.csrf.path)
+    }
+
+    return fetcher<Response>(endpoint.path, {
+      method: endpoint.method,
+      body,
+      headers: csrf
+        ? { [csrf.headerName]: csrf.token }
+        : undefined,
+    })
+  }
+
 
 
   // Возвращаем типизированную функцию-обертку
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async <E extends EndpointConfig<any, any>>(
+
+
     endpoint: E, 
 
 
@@ -65,13 +90,27 @@ export const useApi = () => {
     }
 
   ): Promise<E['_res']> => {
+
+    // Берём переданные заголовки, чтобы добавить к ним CSRF-токен.
+    const headers = new Headers(options?.headers)
+
+    const needsCsrf = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(endpoint.method)
+
+    if (needsCsrf) {
+      const csrfEndpoint = apiEndpoints.auth.csrf
+
+      const csrf = await fetcher<CsrfResponse>(csrfEndpoint.path, {
+        method: csrfEndpoint.method,
+      })
+
+      headers.set(csrf.headerName, csrf.token)
+    }
     
     // Передаем в $fetch путь, метод и остальные опции (включая строго типизированный body)
     return fetcher(endpoint.path, {
-
-      method: endpoint.method,
       ...options,
-
+      method: endpoint.method,
+      headers,
     }) as Promise<E['_res']>
   }
 }
