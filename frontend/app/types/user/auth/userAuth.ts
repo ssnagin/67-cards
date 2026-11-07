@@ -1,3 +1,5 @@
+export type AuthStatus = 'unknown' | 'authenticated' | 'guest' | 'error'
+
 export type LoginData = {
   email: string
   password: string

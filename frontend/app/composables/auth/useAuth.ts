@@ -1,16 +1,27 @@
-import type { LoginData } from "~/types/user/auth/userAuth"
+import type { AuthStatus, LoginData, RegisterData } from "~/types/user/auth/userAuth"
 import type { User } from "~/types/user/user"
 
-export function useAuth() {
-    
+export default function useAuth() {
+
     const config = useRuntimeConfig()
 
+    // Сам юзер
     const user = useState<User | null>('auth-user', () => null)
+
+    // Статус, отражает состояние текущего пользователя
+    const status = useState<AuthStatus>('auth-status')
+    
+    // Был ли инициализирован юзер (пройдена ли аутентификация)
     const initialized = useState<boolean>('auth-initialized', () => false)
+
+    const cookie = import.meta.server
+        ? useRequestHeaders(['cookie']).cookie
+        : undefined
 
     const api = $fetch.create({
         baseURL: config.public.apiBase,
         credentials: 'include',
+        headers: cookie ? { cookie } : undefined,
     })
 
     async function refreshUser() {
@@ -29,18 +40,19 @@ export function useAuth() {
     }
 
     async function login(data: LoginData) {
-        
-        // await api('/api/auth/login', {
-        //     method: 'POST',
-        //     body: data,
-        // })
+        await api('/api/auth/login', {
+            method: 'POST',
+            body: data,
+        })
 
-        // После входа получаем профиль из установленной сессии.
-        user.value = await api<User>('/api/auth/me')
-        initialized.value = true
+        await refreshUser()
+
+        if (status.value !== 'authenticated') {
+            throw new Error('Сервер не подтвердил вход')
+        }
     }
 
-    async function register(data: RegisterData) {
+    async function register(_data: RegisterData) {
         // await api('/api/auth/register', {
         //     method: 'POST',
         //     body: data,
@@ -53,6 +65,12 @@ export function useAuth() {
         // })
 
         user.value = null
+    }
+
+    async function ensureInitialized() {
+        if (status.value === 'unknown' || status.value === 'error') {
+            await refreshUser()
+        }
     }
 
     return {

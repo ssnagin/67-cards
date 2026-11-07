@@ -1,62 +1,60 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/auth/useAuth';
+import useAuth from '~/composables/auth/useAuth';
 
 
 const { refreshUser } = useAuth();
 
-onMounted(async () => {
+const error = ref('')
 
+onMounted(async () => {
+    
     await refreshUser()
 })
 
 </script>
 
 <template>
-    <div>
-    <header
-      class="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between"
-    >
-      <NuxtLink
-        to="/"
-        class="text-2xl font-extrabold text-white"
-      >
-        67 <span class="text-violet-400">cards</span>
+  <div>
+    <header>
+      <NuxtLink to="/">
+        67 cards
       </NuxtLink>
 
-      <nav
-        aria-label="Основная навигация"
-        class="flex flex-wrap items-center gap-4"
-      >
-        <NuxtLink
-          to="/"
-          class="text-slate-300 hover:text-white"
-        >
+      <nav aria-label="Основная навигация">
+        <NuxtLink to="/">
           Главная
         </NuxtLink>
 
-        <template>
-          <NuxtLink
-            to="/login"
-            class="text-slate-300 hover:text-white"
-          >
-            Войти
-          </NuxtLink>
+        <template v-if="initialized && !error">
+          <template v-if="user">
+            <span>{{ user.nickname }}</span>
 
-          <NuxtLink
-            to="/register"
-            class="rounded-lg bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-500"
-          >
-            Регистрация
-          </NuxtLink>
+            <button type="button" @click="handleLogout">
+              Выйти
+            </button>
+          </template>
+
+          <template v-else>
+            <NuxtLink to="/login">
+              Войти
+            </NuxtLink>
+
+            <NuxtLink to="/register">
+              Регистрация
+            </NuxtLink>
+          </template>
         </template>
       </nav>
     </header>
 
-    <main class="mx-auto max-w-6xl px-6 pb-16">
+    <p v-if="error" role="alert">
+      {{ error }}
+    </p>
+
+    <main>
       <slot />
     </main>
   </div>
-
 </template>
 
 <style lang="css" module>
