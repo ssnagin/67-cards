@@ -1,13 +1,16 @@
 <script lang="ts" setup>
 
+definePageMeta({
+  layout: 'default' // просто для примера добавил
+})
 
 </script>
 
 <template>
 
-  <div/>
+  <h1>Hello, world!</h1>
 </template>
 
-<style lang="css">
+<style lang="css" scoped>
 
 </style>

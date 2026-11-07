@@ -1,4 +1,4 @@
-import type { AuthResponse, CsrfResponse, LoginData } from "~/types/user/auth/userAuth"
+import type { AuthResponse, CsrfResponse, LoginData, RegisterData } from "~/types/user/auth/userAuth"
 import type { User } from "~/types/user/user"
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
@@ -13,14 +13,20 @@ export interface EndpointConfig<Req = undefined, Res = undefined> {
 }
 
 export const apiEndpoints = {
-    
-    auth: {
 
+
+
+    auth: {
         // В дженерики <Req, Res> передаем созданные выше интерфейсы
         login: {
             path: '/v1/auth/login',
             method: 'POST',
         } as EndpointConfig<LoginData, AuthResponse>,
+
+        logout: {
+            path: '/v1/auth/logout',
+            method: 'POST',
+        } as EndpointConfig<undefined, undefined>,
 
         csrf: {
             path: '/v1/auth/csrf',
@@ -30,8 +36,12 @@ export const apiEndpoints = {
         me: {
             path: '/v1/auth/me',
             method: 'GET'
-        } as EndpointConfig<undefined, User>
-    }
+        } as EndpointConfig<undefined, User>,
 
+        register: {
+            path: '/v1/auth/register',
+            method: 'POST'
+        } as EndpointConfig<RegisterData, undefined>
+    }
 
 } as const

@@ -22,8 +22,16 @@ export type AuthResponse = {
   token: string
 }
 
+export type RegisterResponse = {
+  status: 'OK' // Чисто ответ что все ок передаем
+}
+
 // Описание типа ответа от сервера для защиты от CSRF
 export type CsrfResponse = {
     headerName: string
     token: string
 }
+
+export const csrfMethods = new Set<string>([
+  'POST', 'PUT', 'PATCH', 'DELETE'
+])

@@ -1,10 +1,9 @@
 import type { AuthStatus, LoginData, RegisterData } from "~/types/user/auth/userAuth"
 import type { User } from "~/types/user/user"
 import { apiEndpoints } from "~/utils/apiEndpoints"
+import { useApi } from "../api/useApi"
 
 export default function useAuth() {
-
-    const config = useRuntimeConfig()
 
     // Сам юзер
     const user = useState<User | null>('auth-user', () => null)
@@ -12,44 +11,42 @@ export default function useAuth() {
     // Статус, отражает состояние текущего пользователя
     const status = useState<AuthStatus>('auth-status', () => 'unknown')
 
-    const cookie = import.meta.server
-        ? useRequestHeaders(['cookie']).cookie
-        : undefined
-
-    // Переделать под useApi, получается. Да?
-    const api = $fetch.create({
-        baseURL: config.public.apiBase,
-        credentials: 'include',
-        headers: cookie ? { cookie } : undefined,
-    })
-
     async function refreshUser() {
 
         try {
-            user.value = await api.request(apiEndpoints.auth.me)
-            status.value = 'authenticated'
-        } catch (error) {
-            
-        }
 
-        // try {
-        //   user.value = await api<User>('/api/auth/me')
-        // }
-        // catch {
-        //   // Гость, завершившаяся сессия или недоступный сервер.
-        //   user.value = null
-        // }
-        // finally {
-        //   initialized.value = true
-        // }
+            user.value = await useApi().request(apiEndpoints.auth.me)
+            status.value = 'authenticated'
+
+        } catch (error: unknown) {
+
+            // Если цифры нет, то ничего страшного, ловим null
+            const statusCode = (error as { statusCode?: number }).statusCode
+            
+            // Нет действующей сессии (ТОЛЬКО ПОСЛЕ ЭТОГО ЗАПРОСА МЫ ПОНИЖАЕМ РАНГОМ ПОЛЬЗОВАТЕЛЯ ДО GUEST)
+            if (statusCode === 401) {
+                user.value = null
+                status.value = 'guest'
+                return
+            }
+
+            status.value = 'error'
+            throw error
+        }
 
         return null
     }
 
     async function login(data: LoginData) {
-        await api('/api/auth/login', {
-            method: 'POST',
-            body: data,
+
+        // Первоначальный логин
+        // await api('/api/auth/login', {
+        //     method: 'POST',
+        //     body: data,
+        // })
+
+        await useApi().request(apiEndpoints.auth.login, {
+            body: data
         })
 
         await refreshUser()
@@ -60,17 +57,14 @@ export default function useAuth() {
         
     }
 
-    async function register(_data: RegisterData) {
-        // await api('/api/auth/register', {
-        //     method: 'POST',
-        //     body: data,
-        // })
+    async function register(data: RegisterData) { 
+        await useApi().request(apiEndpoints.auth.register, {
+            body: data
+        })
     }
 
     async function logout() {
-        // await api('/api/auth/logout', {
-        // method: 'POST',
-        // })
+        await useApi().request(apiEndpoints.auth.logout)
 
         user.value = null
         status.value = 'guest'

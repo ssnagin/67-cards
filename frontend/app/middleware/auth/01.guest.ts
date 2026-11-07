@@ -7,9 +7,11 @@ export default defineNuxtRouteMiddleware(async () => {
   try {
     await ensureInitialized()
   }
-  catch {
+  catch (error) {
+    console.error(error)
+
     throw createError({
-      statusCode: 503,
+      statusCode: 503
     })
   }
 
