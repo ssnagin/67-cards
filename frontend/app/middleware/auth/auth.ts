@@ -4,10 +4,6 @@ import useAuth from '~/composables/auth/useAuth'
 export default defineNuxtRouteMiddleware(async () => {
 
     const { status, ensureInitialized } = useAuth()
-    
-    if (status.value === 'guest') {
-        return navigateTo('/login')
-    }
 
     try {
 
@@ -18,5 +14,9 @@ export default defineNuxtRouteMiddleware(async () => {
         throw createError({
             statusCode: 503
         })
+    }
+
+    if (status.value === 'guest') {
+        return navigateTo('/login')
     }
 })

@@ -10,14 +10,12 @@ export default function useAuth() {
 
     // Статус, отражает состояние текущего пользователя
     const status = useState<AuthStatus>('auth-status')
-    
-    // Был ли инициализирован юзер (пройдена ли аутентификация)
-    const initialized = useState<boolean>('auth-initialized', () => false)
 
     const cookie = import.meta.server
         ? useRequestHeaders(['cookie']).cookie
         : undefined
 
+    // Переделать под useApi, получается. Да?
     const api = $fetch.create({
         baseURL: config.public.apiBase,
         credentials: 'include',
@@ -50,6 +48,7 @@ export default function useAuth() {
         if (status.value !== 'authenticated') {
             throw new Error('Сервер не подтвердил вход')
         }
+        
     }
 
     async function register(_data: RegisterData) {
@@ -65,8 +64,10 @@ export default function useAuth() {
         // })
 
         user.value = null
+        status.value = 'guest'
     }
 
+    // При переходах не запрашиваем профиль повторно без необходимости.
     async function ensureInitialized() {
         if (status.value === 'unknown' || status.value === 'error') {
             await refreshUser()
@@ -75,8 +76,9 @@ export default function useAuth() {
 
     return {
         user,
-        initialized,
+        status,
         refreshUser,
+        ensureInitialized,
         login,
         register,
         logout,

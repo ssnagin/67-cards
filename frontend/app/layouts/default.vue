@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import useAuth from '~/composables/auth/useAuth';
 
+const { user, status, ensureInitialized, refreshUser, logout } = useAuth();
 
-const { refreshUser } = useAuth();
-
-const error = ref('')
+onMounted(async () => {
+    // Для публичных страниц проверяем сессию после загрузки.
+    // На защищённых страницах её уже проверило middleware.
+    await ensureInitialized()
+})
 
 onMounted(async () => {
     
