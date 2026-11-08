@@ -20,6 +20,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
+    // Spring Security
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
     // Redis
     // implementation("org.springframework.boot:spring-boot-starter-data-redis")
     // implementation("org.redisson:redisson:4.7.0")
@@ -33,12 +36,16 @@ dependencies {
     // compileOnly("org.projectlombok:lombok")
     // annotationProcessor("org.projectlombok:lombok")
 
-    // JPA (postgres)
-    // implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    // runtimeOnly("org.postgresql:postgresql")
+ //   JPA (postgres)
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    runtimeOnly("org.postgresql:postgresql")
 
     // Validation (RegisterRequest/LoginRequest)
-    // implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    //Tests
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 
 }
 
