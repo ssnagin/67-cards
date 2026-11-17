@@ -19,6 +19,7 @@
 .settings
 .springBeans
 .vscode
+.env
 /code
 MANIFEST.MF
 _site/
@@ -43,5 +44,4 @@ secrets.yml
 .git-hooks/
 node_modules
 /.kotlin/
-
-logs/*
+logs
