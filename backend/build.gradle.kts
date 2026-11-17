@@ -32,9 +32,9 @@ dependencies {
     // Swagger
     // implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
 
-    // Lombok
-    // compileOnly("org.projectlombok:lombok")
-    // annotationProcessor("org.projectlombok:lombok")
+    //Lombok
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
 
  //   JPA (postgres)
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
