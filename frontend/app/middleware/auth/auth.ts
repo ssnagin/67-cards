@@ -17,6 +17,6 @@ export default defineNuxtRouteMiddleware(async () => {
     }
 
     if (status.value === 'guest') {
-        return navigateTo('/login')
+        return navigateTo('/auth/login')
     }
 })

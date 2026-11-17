@@ -1,8 +1,8 @@
 
 // Event-надзаглушка, которая ходит сама вместо постоянного вызова fetch. 
 
-import { csrfMethods, type CsrfResponse } from "~/types/user/auth/userAuth"
-import { apiEndpoints, type EndpointConfig } from "~/utils/apiEndpoints"
+import useAuthSession from '../auth/useAuthSession'
+import type { EndpointConfig } from "~/utils/apiEndpoints"
 
 /*
   Пример:
@@ -38,6 +38,7 @@ import { apiEndpoints, type EndpointConfig } from "~/utils/apiEndpoints"
 export const useApi = () => {
 
   const config = useRuntimeConfig()
+  const session = useAuthSession()
 
   // Второй аргумент $fetch может быть undefined.
   // Убираем undefined, прежде чем исключать отдельные свойства.
@@ -51,10 +52,13 @@ export const useApi = () => {
   }
 
   const fetcher = $fetch.create({
-    baseURL: config.public.apiBase,
+    baseURL: config.public.apiMode === 'mock'
+      ? config.app.baseURL
+      : config.public.apiBase,
 
     // Разрешаем браузеру отправлять cookie на API.
-    credentials: 'include',
+    // Комментарий выше относится к прежней cookie-схеме. JWT не использует cookies.
+    credentials: 'omit',
 
     // При SSR передаём cookie пользователя в запрос к бэкенду.
     // headers: cookie ? { cookie } : undefined, УБРАНО
@@ -72,21 +76,31 @@ export const useApi = () => {
 
 
     // Запросы, требующие csrf токена. Если он нужен, то вызывается метод-фетчер
-    const needsCsrf = csrfMethods.has(endpoint.method)
-    if (needsCsrf) {
-
-      const csrf = await fetcher<CsrfResponse>(apiEndpoints.auth.csrf.path)
-
-      headers.set(csrf.headerName, csrf.token)
+    // Для текущего JWT API CSRF-запросы не нужны: браузер не отправляет токен автоматически.
+    session.restoreSession()
+    const isAuthEndpoint = endpoint.path.startsWith('/api/auth/')
+    headers.delete('Authorization')
+    if (!isAuthEndpoint && session.accessToken.value) {
+      headers.set('Authorization', `Bearer ${session.accessToken.value}`)
     }
 
-    return fetcher<Response>(endpoint.path, {
-      ...options,
+    try {
+      return await fetcher<Response>(endpoint.path, {
+        ...options,
 
-      // Метод определяется описанием маршрута.
-      method: endpoint.method,
-      headers,
-    }) as Promise<Response>
+        // Метод определяется описанием маршрута.
+        method: endpoint.method,
+        headers,
+      }) as Response
+    }
+    catch (error: unknown) {
+      // Если цифры нет, то ничего страшного, ловим null
+      const statusCode = (error as { statusCode?: number }).statusCode
+      // Нет действующей сессии (ТОЛЬКО ПОСЛЕ ЭТОГО ЗАПРОСА МЫ ПОНИЖАЕМ РАНГОМ ПОЛЬЗОВАТЕЛЯ ДО GUEST)
+      // В JWT-логике также выходим по истечению exp; 403 не сбрасывает вход.
+      if (statusCode === 401 && !isAuthEndpoint) session.clearSession()
+      throw error
+    }
   }
 
   return {

@@ -3,3 +3,12 @@
 
 [Требования](https://docs.google.com/document/d/1r_w7RIxAuTG3jx8edpk0dcFL78XL3K0w-D55ILm642U/edit?tab=t.0)
 
+## Сборка
+
+```
+cp credentials.env.example credentials.env
+cd backend
+./gradlew clean build
+cd ..
+docker compose --env-file credentials.env up -d --build
+```
