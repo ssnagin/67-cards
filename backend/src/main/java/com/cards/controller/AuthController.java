@@ -1,5 +1,6 @@
 package com.cards.controller;
 
+import com.cards.dto.auth.StatusResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
-import com.cards.dto.auth.AuthResponse;
 import com.cards.dto.auth.LoginRequest;
 import com.cards.dto.auth.LoginResponse;
 import com.cards.dto.auth.RegisterRequest;
@@ -24,8 +24,8 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request){
-    AuthResponse  response = authService.register(request);
+  public ResponseEntity<StatusResponse> register(@Valid @RequestBody RegisterRequest request){
+    StatusResponse response = authService.register(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
   

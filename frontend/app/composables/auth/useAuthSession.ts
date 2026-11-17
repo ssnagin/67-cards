@@ -1,10 +1,9 @@
 import type { AuthStatus } from '~/types/user/auth/userAuth'
-import type { User } from '~/types/user/user'
 import { readAccessToken } from '~/utils/auth/jwt'
 
 export default function useAuthSession() {
   const accessToken = useState<string | null>('auth-access-token', () => null)
-  const user = useState<Pick<User, 'email' | 'role'> | null>('auth-user', () => null)
+  const user = useState<{ id: string, role: string } | null>('auth-user', () => null)
   const status = useState<AuthStatus>('auth-status', () => 'unknown')
   const storageKey = `67cards:${useRuntimeConfig().public.apiMode}:access-token`
 
@@ -21,7 +20,7 @@ export default function useAuthSession() {
   function setSession(token: string) {
     const claims = readAccessToken(token)
     accessToken.value = token
-    user.value = { email: claims.sub, role: claims.role }
+    user.value = { id: claims.sub, role: claims.role }
     status.value = 'authenticated'
     if (import.meta.client) {
       try { sessionStorage.setItem(storageKey, token) }

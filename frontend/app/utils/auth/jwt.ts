@@ -20,7 +20,7 @@ export function readAccessToken(token: string, now = Date.now()): AccessTokenCla
   const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
   const bytes = Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')), char => char.charCodeAt(0))
   const claims = JSON.parse(new TextDecoder().decode(bytes))
-  if (!claims || typeof claims.sub !== 'string' || !claims.sub
+  if (!claims || typeof claims.sub !== 'string' || !/^[1-9]\d*$/.test(claims.sub)
     || typeof claims.role !== 'string' || claims.iss !== 'cards-api'
     || typeof claims.exp !== 'number' || !Number.isFinite(claims.exp)
     || claims.exp * 1000 <= now) {

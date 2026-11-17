@@ -1,4 +1,4 @@
-import type { AuthResponse, LoginData, RegisterData, RegisterResponse } from "~/types/user/auth/userAuth"
+import type { AuthResponse, LoginData, UserResponse, RegisterData, StatusResponse } from "~/types/user/auth/userAuth"
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
@@ -15,6 +15,12 @@ export const apiEndpoints = {
 
 
 
+    users: {
+        me: {
+            path: '/api/users/me',
+            method: 'GET'
+        } as EndpointConfig<undefined, UserResponse>
+    },
     auth: {
         // В дженерики <Req, Res> передаем созданные выше интерфейсы
         login: {
@@ -25,7 +31,7 @@ export const apiEndpoints = {
         register: {
             path: '/api/auth/register',
             method: 'POST'
-        } as EndpointConfig<RegisterData, RegisterResponse>
+        } as EndpointConfig<RegisterData, StatusResponse>
     }
 
 } as const

@@ -24,7 +24,7 @@ public class JwtService {
     this.accessTokenTt1 = accessTokenTt1;
   }
 
-  public String generateAccessToken(UserDetails userDetails){
+  public String generateAccessToken(Long userId, UserDetails userDetails){
     Instant now = Instant.now();
 
     String role = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst().orElse("ROLE_USER");
@@ -33,7 +33,7 @@ public class JwtService {
     .issuer("cards-api")
     .issuedAt(now)
     .expiresAt(now.plus(accessTokenTt1))
-    .subject(userDetails.getUsername())
+    .subject(userId.toString())
     .claim("role", role)
     .build();
 

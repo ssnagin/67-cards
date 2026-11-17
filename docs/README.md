@@ -1,5 +1,8 @@
 # Документация 67 Cards
 
+Регистрация `POST /api/auth/register` принимает `username`, `email` и `password`;
+при успехе возвращает HTTP 201 и JSON `{ "status": "OK" }`.
+
 ## Запуск
 
 - [Docker Compose](DOCKER.md) — единый запуск backend, PostgreSQL и Redis из корня проекта.

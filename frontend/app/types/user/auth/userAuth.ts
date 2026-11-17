@@ -11,19 +11,18 @@ export type LoginData = {
   password: string
 }
 
-// export type RegisterData = LoginData & { // TODO: ДОБАВИТЬ ПОТОМ ПЕРЕДАЧУ ИМЕНИ 
-//   name: string
-// }
-export type RegisterData = LoginData
+export type RegisterData = LoginData & {
+  username: string
+}
 
 export type AuthResponse = {
   accessToken: string
   tokenType: 'Bearer'
 }
 
-export type RegisterResponse = User
-// Чисто ответ что все ок передаем
-// Уточнение контракта PR #5: ответ регистрации содержит id, email, role, без токена. TODO: ПОТОМ СДЕЛАТЬ ТОЛЬКО ОК
+export type RegisterResponse = { status: 'OK' }
+// Данные текущего пользователя, полученные от защищённого API.
+export type MeResponse = User
 
 // Описание типа ответа от сервера для защиты от CSRF
 // Исторические типы: текущий JWT API и useApi их не используют.
