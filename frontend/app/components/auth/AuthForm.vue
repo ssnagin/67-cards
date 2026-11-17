@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseInput from '~/components/base/BaseInput.vue'
-import useAppAuth from '~/composables/auth/useAppAuth'
+import useAppAuth, { SessionConfirmationError } from '~/composables/auth/useAppAuth'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
 const auth = useAppAuth()
@@ -20,12 +20,15 @@ async function submit() {
     return
   }
   pending.value = true
+  let action: 'register' | 'login' = 'login'
   try {
     if (isRegistration.value && !registered.value) {
+      action = 'register'
       await auth.register({ username: username.value.trim(), email: email.value.trim(), password: password.value })
       // Если последующий вход временно недоступен, повторяем только его, не регистрацию.
       registered.value = true
     }
+    action = 'login'
     await auth.login({ email: email.value.trim(), password: password.value })
     password.value = ''
     await navigateTo('/', { replace: true })

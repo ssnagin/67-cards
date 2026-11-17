@@ -1,12 +1,19 @@
 import type { LoginData, RegisterData } from '~/types/user/auth/userAuth'
 
+export class SessionConfirmationError extends Error {
+  constructor() {
+    super('Не удалось получить данные пользователя после входа. Попробуйте ещё раз.')
+    this.name = 'SessionConfirmationError'
+  }
+}
+
 export default function useAppAuth() {
   const auth = useAuth()
 
   async function login(data: LoginData) {
     await auth.signIn(data, { redirect: false })
     // NuxtAuth может вернуть управление без ошибки, если токен или /me не получены.
-    if (auth.status.value !== 'authenticated') throw new Error('Не удалось подтвердить вход. Проверьте доступность сервера.')
+    if (auth.status.value !== 'authenticated') throw new SessionConfirmationError()
   }
 
   async function register(data: RegisterData) {
