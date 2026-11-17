@@ -7,6 +7,12 @@
 
 ```
 cp credentials.env.example credentials.env
+```
+
+Заполните `credentials.env` своими значениями, включая `JWT_SECRET`
+(секрет подписи JWT). Затем из корня проекта:
+
+```bash
 cd backend
 ./gradlew clean build
 cd ..
