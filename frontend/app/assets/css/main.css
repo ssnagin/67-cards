@@ -1,2 +1,19 @@
 /* @import "tailwindcss"; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+:root {
+  color-scheme: dark;
+  --color-bg: #1e1e24;
+  --color-surface: #282830;
+  --color-text: #f7f7fb;
+  --color-muted: #b9b9c9;
+  --color-primary: #6366f1;
+  --color-accent: #f43f5e;
+  --color-error: #ffabbc;
+  --color-control: #747485;
+  --color-divider: #3e3e4a;
+  --color-focus: #b6b8ff;
+  --color-link: #c4c5ff;
+}

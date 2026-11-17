@@ -1,5 +1,3 @@
-import { csrfMethods } from './app/types/user/auth/userAuth'
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2026-11-06',
@@ -16,11 +14,8 @@ export default defineNuxtConfig({
   ],
 
   security: {
-    csrf: {
-      addCsrfTokenToEventCtx: true,
-      headerName: 'X-CSRF-TOKEN',
-      methodsToProtect: [...csrfMethods]
-    }
+    // JWT передаётся в Authorization, cookie-аутентификации здесь нет.
+    csrf: false,
   },
 
   css: ['~/assets/css/main.css'],
@@ -34,8 +29,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-
-    csrfSecret: 'some-super-cool-private-csrf-verification-key-32-symbols-minimum',
 
     public: {
       apiBase: 'http://localhost:16768',

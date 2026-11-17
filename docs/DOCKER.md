@@ -1,0 +1,72 @@
+# Запуск backend и инфраструктуры
+
+Единственная конфигурация — `docker-compose.yml` в корне проекта.
+Отдельный `backend/compose.yaml`, запускавший PostgreSQL 17 на порту 5433,
+удалён как дубликат. Nuxt включён в тот же Compose как сервис `frontend`.
+
+## Подготовка и запуск
+
+В корне скопируйте `credentials.env.example` в `credentials.env`, заполните
+параметры PostgreSQL и добавьте `JWT_SECRET` для подписи токенов.
+Ключ должен быть в Base64 и после декодирования содержать минимум 32 байта.
+Сгенерировать значение можно командой `openssl rand -base64 32`.
+Храните его в `credentials.env`; Compose проверяет наличие непустого значения
+до запуска контейнеров. Не меняйте ключ при каждом запуске: его замена
+делает ранее выданные JWT недействительными.
+JAR собирается локально с JDK 25; Dockerfile копирует готовый `app.jar`.
+
+```bash
+cd backend
+./gradlew clean build
+cd ..
+docker compose --env-file credentials.env config --quiet
+docker compose --env-file credentials.env up -d --build
+```
+
+Для просмотра логов:
+
+```bash
+docker compose --env-file credentials.env logs --tail=100 spring-app
+```
+
+## Сервисы и подключения
+
+| Сервис | Адрес с хоста | Адрес в сети Compose |
+|---|---|---|
+| Backend | `127.0.0.1:16768` | `spring-app:8080` |
+| PostgreSQL | `127.0.0.1:5432` по умолчанию | `postgresql:5432` |
+| Redis | `127.0.0.1:6379` по умолчанию | `redis-db:6379` |
+
+`POSTGRES_PORT` и `REDIS_PORT` меняют только опубликованные порты хоста.
+Backend использует внутренние адреса и ожидает успешных healthcheck обеих БД.
+Его внутренний `SERVER_PORT` закреплён на 8080 для соответствия пробросу порта.
+Redis-реплики не запускаются. В текущем backend зависимости Redis отключены;
+наличие контейнера Redis само по себе не включает кэширование приложения.
+
+## Данные и объединение конфигураций
+
+Сохранены версия PostgreSQL и том `postgres_data` корневого Compose,
+включая прежнюю точку монтирования `/var/lib/postgresql/18/docker`.
+Redis сохраняет данные в `./redis_data`.
+
+Прежний Compose из `backend` использовал собственный том другого Compose-проекта
+и PostgreSQL 17. Его данные автоматически не переносятся в корневую БД.
+Если там есть нужные данные, требуется отдельный перенос через dump/restore;
+подключать каталог PostgreSQL 17 напрямую к PostgreSQL 18 нельзя.
+При обычном обновлении не используйте `down -v`: эта команда удаляет том БД.
+
+Исправлен запуск JAR: `java -jar app.jar`. Ранее `java jar app.jar`
+завершался с `ClassNotFoundException: jar`, а `restart: on-failure`
+вызывал повторные запуски контейнера.
+
+## Nuxt в локальном Compose
+
+`frontend/Dockerfile` выполняет `npm ci` и `npm run build` на Node 22,
+затем переносит только `.output` в runtime-образ. Сервер запускается
+от пользователя `node` на порту 3000. Локальные node_modules, .env и
+результаты прежних сборок исключены из контекста Docker.
+
+Общий `up -d --build` собирает также frontend. Адрес: http://localhost:3000/.
+Compose переопределяет base URL на `/` и включает `apiMode=real`.
+Браузер обращается к http://localhost:16768; это запуск на локальной машине.
+Для GitHub Pages исходный base URL `/67-cards/` сохранён.

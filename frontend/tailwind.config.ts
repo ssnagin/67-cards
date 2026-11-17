@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
+    "./app/{components,layouts,pages,plugins}/**/*.{js,vue,ts}",
+    "./app/app.vue",
+    "./app/error.vue",
     "./components/**/*.{js,vue,ts}",
     "./layouts/**/*.vue",
     "./pages/**/*.vue",
@@ -12,10 +15,18 @@ export default {
     extend: {
       // Сюда переносим токены из Figma
       colors: {
+        surface: 'var(--color-surface)',
+        content: 'var(--color-text)',
+        muted: 'var(--color-muted)',
+        error: 'var(--color-error)',
+        control: 'var(--color-control)',
+        divider: 'var(--color-divider)',
+        focus: 'var(--color-focus)',
+        link: 'var(--color-link)',
         brand: {
-          dark: '#1E1E24',
-          primary: '#6366F1', // Например, ваш главный фиолетовый из Figma
-          accent: '#F43F5E',
+          dark: 'var(--color-bg)',
+          primary: 'var(--color-primary)', // Например, ваш главный фиолетовый из Figma
+          accent: 'var(--color-accent)',
         }
       },
       fontFamily: {
