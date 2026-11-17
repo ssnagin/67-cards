@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import BaseInput from '~/components/base/BaseInput.vue'
-import useAuth from '~/composables/auth/useAuth'
+import useAppAuth from '~/composables/auth/useAppAuth'
 
 const props = defineProps<{ mode: 'login' | 'register' }>()
-const auth = useAuth()
+const auth = useAppAuth()
 const email = ref('')
 const username = ref('')
 const password = ref('')

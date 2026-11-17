@@ -1,11 +1,5 @@
 import type { User } from '../user'
 
-export type AuthStatus =
-  | 'unknown'
-  | 'authenticated'
-  | 'guest'
-  | 'error'
-
 export type LoginData = {
   email: string
   password: string
@@ -20,9 +14,9 @@ export type AuthResponse = {
   tokenType: 'Bearer'
 }
 
-export type RegisterResponse = { status: 'OK' }
+export type StatusResponse = { status: 'OK' }
 // Данные текущего пользователя, полученные от защищённого API.
-export type MeResponse = User
+export type UserResponse = User
 
 // Описание типа ответа от сервера для защиты от CSRF
 // Исторические типы: текущий JWT API и useApi их не используют.

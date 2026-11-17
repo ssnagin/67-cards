@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import useAuth from '~/composables/auth/useAuth'
+import useAppAuth from '~/composables/auth/useAppAuth'
 
-const { status, logout, ensureInitialized } = useAuth()
+const { status, user, logout, ensureInitialized } = useAppAuth()
 const pending = ref(false)
 const error = ref('')
+
+// Потеря подтверждённой сессии отправляет пользователя на страницу входа.
+watch(user, (current, previous) => {
+  if (!current && previous) void navigateTo('/auth/login', { replace: true })
+})
 
 onMounted(async () => {
   // Для публичных страниц проверяем сессию после загрузки.

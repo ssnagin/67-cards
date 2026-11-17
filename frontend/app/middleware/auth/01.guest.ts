@@ -1,8 +1,8 @@
-import useAuth from "~/composables/auth/useAuth"
+import useAppAuth from "~/composables/auth/useAppAuth"
 
 export default defineNuxtRouteMiddleware(async () => {
 
-  const { status, ensureInitialized } = useAuth()
+  const { status, ensureInitialized } = useAppAuth()
 
   try {
     await ensureInitialized()
