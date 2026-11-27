@@ -35,18 +35,25 @@ docker compose --env-file credentials.env logs --tail=100 spring-app
 |---|---|---|
 | Backend | `127.0.0.1:16768` | `spring-app:8080` |
 | PostgreSQL | `127.0.0.1:5432` по умолчанию | `postgresql:5432` |
+| MongoDB | `127.0.0.1:27017` по умолчанию | `mongo:27017` |
 | Redis | `127.0.0.1:6379` по умолчанию | `redis-db:6379` |
 
-`POSTGRES_PORT` и `REDIS_PORT` меняют только опубликованные порты хоста.
-Backend использует внутренние адреса и ожидает успешных healthcheck обеих БД.
+`POSTGRES_PORT`, `MONGO_PORT` и `REDIS_PORT` меняют только опубликованные порты хоста.
+Backend использует внутренние адреса и ожидает успешных healthcheck всех трёх БД.
 Его внутренний `SERVER_PORT` закреплён на 8080 для соответствия пробросу порта.
 Redis-реплики не запускаются. В текущем backend зависимости Redis отключены;
 наличие контейнера Redis само по себе не включает кэширование приложения.
+
+Колоды и карточки хранятся в MongoDB, пользователи — в PostgreSQL.
+Backend подключается к Mongo через `SPRING_MONGODB_URI` (`mongodb://mongo:27017/cards`).
+Важно: в Spring Boot 4 параметры подключения перенесены в `spring.mongodb.*`;
+устаревший `spring.data.mongodb.uri` игнорируется и молча уводит приложение в базу `test`.
 
 ## Данные и объединение конфигураций
 
 Сохранены версия PostgreSQL и том `postgres_data` корневого Compose,
 включая прежнюю точку монтирования `/var/lib/postgresql/18/docker`.
+Данные MongoDB сохраняются в томе `mongo_data`.
 Redis сохраняет данные в `./redis_data`.
 
 Прежний Compose из `backend` использовал собственный том другого Compose-проекта
@@ -58,6 +65,20 @@ Redis сохраняет данные в `./redis_data`.
 Исправлен запуск JAR: `java -jar app.jar`. Ранее `java jar app.jar`
 завершался с `ClassNotFoundException: jar`, а `restart: on-failure`
 вызывал повторные запуски контейнера.
+
+## Локальный запуск backend без Docker
+
+Для отладки из IDE достаточно поднять только БД:
+
+```bash
+docker compose --env-file credentials.env up -d postgresql mongo
+```
+
+Spring не читает `backend/.env` автоматически. Переменные нужно передать
+процессу: `POSTGRES_PORT` (опубликованный порт из `credentials.env`),
+`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `JWT_SECRET`,
+`SPRING_MONGODB_URI=mongodb://localhost:27017/cards`.
+По умолчанию backend слушает 8080; порт 16768 публикует Compose.
 
 ## Nuxt в локальном Compose
 
