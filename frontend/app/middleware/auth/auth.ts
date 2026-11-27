@@ -1,9 +1,9 @@
-import useAuth from '~/composables/auth/useAuth'
+import useAppAuth from '~/composables/auth/useAppAuth'
 
 // Middleware для защищённых страниц. 
 export default defineNuxtRouteMiddleware(async () => {
 
-    const { status, ensureInitialized } = useAuth()
+    const { status, ensureInitialized } = useAppAuth()
 
     try {
 
@@ -16,7 +16,7 @@ export default defineNuxtRouteMiddleware(async () => {
         })
     }
 
-    if (status.value === 'guest') {
+    if (status.value === 'unauthenticated') {
         return navigateTo('/auth/login')
     }
 })

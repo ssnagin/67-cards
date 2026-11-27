@@ -2,7 +2,8 @@
 
 Единственная конфигурация — `docker-compose.yml` в корне проекта.
 Отдельный `backend/compose.yaml`, запускавший PostgreSQL 17 на порту 5433,
-удалён как дубликат. Nuxt включён в тот же Compose как сервис `frontend`.
+удалён как дубликат. Сервис `frontend` в Compose сейчас закомментирован;
+Nuxt можно запускать отдельно в режиме разработки.
 
 ## Подготовка и запуск
 
@@ -13,15 +14,15 @@
 Храните его в `credentials.env`; Compose проверяет наличие непустого значения
 до запуска контейнеров. Не меняйте ключ при каждом запуске: его замена
 делает ранее выданные JWT недействительными.
-JAR собирается локально с JDK 25; Dockerfile копирует готовый `app.jar`.
+Dockerfile собирает JAR из исходников внутри образа с JDK 25. При первой
+сборке Docker потребуется доступ к Gradle и Maven Central для загрузки зависимостей.
 
 ```bash
-cd backend
-./gradlew clean build
-cd ..
 docker compose --env-file credentials.env config --quiet
 docker compose --env-file credentials.env up -d --build
 ```
+
+Для отдельного запуска тестов backend используйте `cd backend && ./gradlew test`.
 
 Для просмотра логов:
 
@@ -87,7 +88,8 @@ Spring не читает `backend/.env` автоматически. Переме
 от пользователя `node` на порту 3000. Локальные node_modules, .env и
 результаты прежних сборок исключены из контекста Docker.
 
-Общий `up -d --build` собирает также frontend. Адрес: http://localhost:3000/.
-Compose переопределяет base URL на `/` и включает `apiMode=real`.
-Браузер обращается к http://localhost:16768; это запуск на локальной машине.
-Для GitHub Pages исходный base URL `/67-cards/` сохранён.
+Сервис `frontend` закомментирован и не запускается общим `up -d --build`.
+При локальном запуске Nuxt для работы с backend задайте в `frontend/.env`
+`NUXT_PUBLIC_API_MODE=real` и `NUXT_PUBLIC_API_BASE=http://localhost:16768`.
+Браузер обращается к этому адресу на локальной машине. Для GitHub Pages
+исходный base URL `/67-cards/` сохранён.

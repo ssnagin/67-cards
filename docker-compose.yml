@@ -89,21 +89,21 @@ services:
       SPRING_MONGODB_URI: mongodb://mongo:27017/cards
     restart: on-failure
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "127.0.0.1:3000:3000"
-    environment:
-      NUXT_APP_BASE_URL: /
-      NUXT_PUBLIC_API_MODE: real
-      # Запросы выполняет браузер пользователя, поэтому нужен адрес хоста.
-      NUXT_PUBLIC_API_BASE: http://localhost:16768
-    depends_on:
-      spring-app:
-        condition: service_started
-    restart: on-failure
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    ports:
+#      - "127.0.0.1:3000:3000"
+#    environment:
+#      NUXT_APP_BASE_URL: /
+#      NUXT_PUBLIC_API_MODE: real
+#      # Запросы выполняет браузер пользователя, поэтому нужен адрес хоста.
+#      NUXT_PUBLIC_API_BASE: http://localhost:16768
+#    depends_on:
+#      spring-app:
+#        condition: service_started
+#    restart: on-failure
 
 volumes:
   postgres_data:
