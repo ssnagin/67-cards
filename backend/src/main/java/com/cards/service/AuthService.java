@@ -6,15 +6,18 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.cards.model.Role;
-import com.cards.model.Users;
-import com.cards.repository.UserRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import com.cards.dto.auth.AuthResponse;
+import com.cards.dto.auth.LoginRequest;
+import com.cards.dto.auth.LoginResponse;
+import com.cards.dto.auth.RegisterRequest;
+import com.cards.user.Role;
+import com.cards.user.UserRepository;
+import com.cards.user.Users;
 
 
 @Service
@@ -28,7 +31,7 @@ public class AuthService {
   @Transactional 
   public StatusResponse register(RegisterRequest request){
     if (userRepository.existsByEmail(request.email())){
-      throw new IllegalArgumentException("Этот адресс уже зарегистрирован");
+      throw new IllegalArgumentException("Этот адрес уже зарегистрирован");
     }
     String passwordHash = passwordEncoder.encode(request.password());
 
@@ -58,8 +61,8 @@ public class AuthService {
     );
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     Users user = userRepository.findByEmail(userDetails.getUsername())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    String token = jwtService.generateAccessToken(user.getId(), userDetails);
+      .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + userDetails.getUsername()));
+    String token = jwtService.generateAccessToken(userDetails, user.getId());
     return new LoginResponse(token,"Bearer");
   }
 }

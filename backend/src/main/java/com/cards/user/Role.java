@@ -1,4 +1,4 @@
-package com.cards.model;
+package com.cards.user;
 
 public enum Role{
   USER,

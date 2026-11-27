@@ -17,14 +17,14 @@ import org.springframework.stereotype.Service;
 @Service 
 public class JwtService {
   private final JwtEncoder jwtEncoder;
-  private final Duration accessTokenTt1;
+  private final Duration accessTokenTtl;
 
-  public JwtService(JwtEncoder jwtEncoder, @Value("${app.jwt.access-token-ttl:PT15M}") Duration accessTokenTt1){
+  public JwtService(JwtEncoder jwtEncoder, @Value("${app.jwt.access-token-ttl:PT15M}") Duration accessTokenTtl){
     this.jwtEncoder = jwtEncoder;
-    this.accessTokenTt1 = accessTokenTt1;
+    this.accessTokenTtl = accessTokenTtl;
   }
 
-  public String generateAccessToken(Long userId, UserDetails userDetails){
+  public String generateAccessToken(UserDetails userDetails, Long userId){
     Instant now = Instant.now();
 
     String role = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst().orElse("ROLE_USER");
@@ -32,8 +32,9 @@ public class JwtService {
     JwtClaimsSet claims = JwtClaimsSet.builder()
     .issuer("cards-api")
     .issuedAt(now)
-    .expiresAt(now.plus(accessTokenTt1))
-    .subject(userId.toString())
+    .expiresAt(now.plus(accessTokenTtl))
+    .subject(userDetails.getUsername())
+    .claim("uid", userId)
     .claim("role", role)
     .build();
 

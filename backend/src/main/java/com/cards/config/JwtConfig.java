@@ -37,7 +37,7 @@ public class JwtConfig {
 
   }
   @Bean
-  public JwtDecoder jwtDecoder(SecretKey jwSecretKey){
-    return NimbusJwtDecoder.withSecretKey(jwSecretKey).macAlgorithm(MacAlgorithm.HS256).build();
+  public JwtDecoder jwtDecoder(SecretKey jwtSecretKey){
+    return NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build();
   }
 }

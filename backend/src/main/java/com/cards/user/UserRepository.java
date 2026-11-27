@@ -1,6 +1,6 @@
-package com.cards.repository;
+package com.cards.user;
 
-import com.cards.model.Users;
+import com.cards.user.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

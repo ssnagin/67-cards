@@ -1,4 +1,4 @@
-package com.cards.model;
+package com.cards.user;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -38,6 +38,21 @@ public class Users {
         this.username = username;
         this.passwordHash = passwordHash;
         this.role = role;
+    }
+
+    /**
+     * Меняет почту учётной записи.
+     * Отдельный метод вместо сеттера, чтобы смена email шла только через сервис с проверкой уникальности.
+     */
+    public void changeEmail(String email) {
+        this.email = email;
+    }
+
+    /**
+     * Меняет хеш пароля. Хеширование выполняет сервис, сущность хранит только готовый хеш.
+     */
+    public void changePasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     @PrePersist
