@@ -96,6 +96,7 @@ class UserServiceTest {
     }
 
     private static Users user(String email, String passwordHash) {
-        return new Users(email, passwordHash, Role.USER);
+        // После появления username в модели конструктор требует и его.
+        return new Users(email, "testuser", passwordHash, Role.USER);
     }
 }

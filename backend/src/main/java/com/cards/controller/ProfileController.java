@@ -2,7 +2,6 @@ package com.cards.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,10 +23,8 @@ public class ProfileController {
     private final UserService userService;
     private final CurrentUserService currentUserService;
 
-    @GetMapping("/me")
-    public ProfileResponse me() {
-        return toResponse(userService.getById(currentUserService.getCurrentUserId()));
-    }
+    // GET /api/users/me вынесен в UserController (возвращает UserResponse с username);
+    // здесь остались только операции изменения профиля.
 
     @PatchMapping("/me")
     public ProfileResponse update(@Valid @RequestBody UpdateProfileRequest request) {

@@ -1,6 +1,14 @@
 package com.cards.service;
 
-import com.cards.dto.auth.*;
+import com.cards.dto.auth.LoginRequest;
+import com.cards.dto.auth.LoginResponse;
+import com.cards.dto.auth.RegisterRequest;
+import com.cards.dto.auth.Status;
+import com.cards.dto.auth.StatusResponse;
+import com.cards.user.Role;
+import com.cards.user.UserRepository;
+import com.cards.user.Users;
+
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,14 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.cards.dto.auth.AuthResponse;
-import com.cards.dto.auth.LoginRequest;
-import com.cards.dto.auth.LoginResponse;
-import com.cards.dto.auth.RegisterRequest;
-import com.cards.user.Role;
-import com.cards.user.UserRepository;
-import com.cards.user.Users;
 
 
 @Service
@@ -39,19 +39,6 @@ public class AuthService {
     userRepository.save(user);
 
     return new StatusResponse(Status.OK);
-  }
-
-  @Transactional(readOnly = true)
-  public UserResponse getCurrentUser(String subject) {
-    long userId;
-    try {
-      userId = Long.parseLong(subject);
-    } catch (NumberFormatException e) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-    }
-    Users user = userRepository.findById(userId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
   @Transactional(readOnly = true)

@@ -17,7 +17,11 @@
 ## Дизайн
 
 - [`design/DESIGN.md`](design/DESIGN.md) — состав FigCraft-файлов, карта экранов и состояний, требования к дизайн-системе, прототипам, адаптивности и передаче макетов в разработку.
+- `design/01_Design.figcraft` — **основной рабочий файл макетов**: страницы Dashboard (5 состояний экрана), Collection, Холст коллекции (редактор карточки, диалоги, статусы сохранения), переходы прототипа, Auth (вход, регистрация, восстановление пароля, состояния ошибок). Внутри — переменные `Dashboard · Dark Neon Editorial` и стили текста. Разбор содержимого — в [`HANDBOOK.md` §13](HANDBOOK.md).
+- `design/01_Workspace_and_Authoring.figcraft` и `design/02_Live_Session.figcraft` — пустые заготовки (по одной пустой странице). Экраны живой сессии не спроектированы.
+- `design/00_UI_Kit__Foundations__Brandbook.figcraft` — лист иконок Font Awesome Free 7.3.1 в тёмной и светлой теме; палитры и типографической шкалы внутри нет.
 - `design/99_Drafts_and_Archive.figcraft` — исследования и неутверждённые визуальные направления. Страница `Moodboard` содержит референсы владельца, а страница `01 — Web style / Dark Neon Editorial` — прикладной web style guide, собранный по этому мудборду: foundations, компоненты, desktop-пример и mobile live-сценарий. Ранее подготовленные Ink & Signal, Grid Play и Culture Club сохранены только как отклонённый архив.
+- `design/fonts/` — Onest, Unbounded и Font Awesome Free 7.3.1 (с лицензией). Набор Tabler Icons удалён в PR #8.
 
 ## Зафиксированные вопросы
 
