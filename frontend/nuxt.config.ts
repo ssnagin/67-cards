@@ -57,6 +57,13 @@ export default defineNuxtConfig({
     baseURL: "/67-cards/"
   },
 
+  // Dev-сервер слушает только IPv4 (127.0.0.1): на части Windows-машин «localhost»
+  // резолвится в IPv6 (::1), и фронт/бэкенд не видят друг друга по IPv4.
+  devServer: {
+    host: '127.0.0.1',
+    port: 3000,
+  },
+
   experimental: {
     payloadExtraction: false,
   },
@@ -64,7 +71,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
 
     public: {
-      apiBase: 'http://localhost:16768',
+      // Явно IPv4: адрес бэкенда должен совпадать с тем, где он реально слушает.
+      apiBase: 'http://127.0.0.1:16768',
       apiMode: 'mock',
       
     }

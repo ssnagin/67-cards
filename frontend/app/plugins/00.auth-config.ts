@@ -4,8 +4,9 @@ export default defineNuxtPlugin({
   setup() {
     const config = useRuntimeConfig()
     // NuxtAuth и обычный API-клиент используют один адрес backend.
+    // В mock-режиме моки Nitro лежат на корне dev-сервера, поэтому baseURL пустой.
     config.public.auth.baseURL = config.public.apiMode === 'mock'
-      ? config.app.baseURL
+      ? ''
       : config.public.apiBase
     const provider = config.public.auth.provider
     if (provider.type === 'local') {

@@ -51,8 +51,10 @@ export const useApi = () => {
   }
 
   const fetcher = $fetch.create({
+    // В mock-режиме моки Nitro лежат на корне dev-сервера (/api/...),
+    // поэтому baseURL пустой. В real-режиме — полный адрес бэкенда.
     baseURL: config.public.apiMode === 'mock'
-      ? config.app.baseURL
+      ? ''
       : config.public.apiBase,
 
     // Bearer передаётся явно, cookies API не отправляются.
@@ -74,6 +76,8 @@ export const useApi = () => {
     const isAuthEndpoint = endpoint.path.startsWith('/api/auth/')
     headers.delete('Authorization')
     if (!isAuthEndpoint && auth.token.value) {
+      // auth.token.value уже содержит префикс «Bearer » (sidebase formatToken),
+      // поэтому подставляем его как есть, без повторного префикса.
       headers.set('Authorization', auth.token.value)
     }
 

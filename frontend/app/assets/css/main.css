@@ -1,19 +1,50 @@
-/* @import "tailwindcss"; */
+@import './fonts.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Токены дизайна из 01_Design.figcraft (коллекция «Dashboard · Dark Neon Editorial»).
+  Имена CSS-переменных — семантические, значения берутся из макета, а не придумываются.
+*/
+
 :root {
   color-scheme: dark;
-  --color-bg: #1e1e24;
-  --color-surface: #282830;
-  --color-text: #f7f7fb;
-  --color-muted: #b9b9c9;
-  --color-primary: #6366f1;
-  --color-accent: #f43f5e;
-  --color-error: #ffabbc;
-  --color-control: #747485;
-  --color-divider: #3e3e4a;
-  --color-focus: #b6b8ff;
-  --color-link: #c4c5ff;
+
+  /* Поверхности и фон */
+  --color-canvas: #0a0712;   /* фон страницы */
+  --color-surface: #151020;  /* карточки, шапка */
+  --color-raised: #211832;   /* приподнятые контролы, меню */
+
+  /* Границы */
+  --color-divider: #3a2c52;
+
+  /* Текст */
+  --color-text: #f8f5ff;
+  --color-muted: #a79db7;
+  --color-link: #d1bbff;
+
+  /* Акценты */
+  --color-primary: #7c3aed;        /* основное действие */
+  --color-primary-hover: #8848f7;  /* наведение на primary */
+  --color-blue: #3b82f6;           /* live, avatar */
+  --color-magenta: #f43f7f;        /* редкий эмоциональный акцент */
+
+  /* Состояния */
+  --color-focus: #c7acff;          /* focus-visible */
+  --color-danger: #ff5c75;         /* ошибка, опасное действие */
+  --color-warning: #ffc857;        /* предупреждение */
+
+  /* Радиусы: панели 0, контролы 2 px (из Radius/Card и Radius/Control) */
+  --radius-control: 2px;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-text);
+    font-family: 'Onest', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
 }
