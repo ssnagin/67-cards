@@ -42,6 +42,23 @@ services:
       timeout: 3s
       retries: 10
 
+  # Колоды и карточки хранятся в MongoDB (см. application.properties).
+  mongo:
+    image: mongo:8
+    container_name: mongo_container
+
+    ports:
+      - "127.0.0.1:${MONGO_PORT:-27017}:27017"
+
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   spring-app:
     build:
       context: .
@@ -58,6 +75,8 @@ services:
         condition: service_healthy
       postgresql:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
     environment:
       # Внутри сети Compose используются порты контейнеров, а не хоста.
       SERVER_PORT: 8080
@@ -67,6 +86,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_MONGODB_URI: mongodb://mongo:27017/cards
     restart: on-failure
 
   frontend:
@@ -87,3 +107,4 @@ services:
 
 volumes:
   postgres_data:
+  mongo_data:
