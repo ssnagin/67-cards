@@ -20,6 +20,10 @@ AI Bot should not start, restart, or stop the dev server without a direct user r
 
 Use browser-use / Playwright / in-app browser only upon explicit user request: "open in browser," "check visually," "take a screenshot," "test frontend." For common, minor HTML/CSS/JS edits, do not automatically launch browser-use/Playwright; limit yourself to code checking and report that visual checking was not performed.
 
+### Documetation
+
+The repository contains generated .md documentation in the docs/ folder. Make sure to always update this information and take it for your own needs.
+
 ### Backend
 
 Backend server is running at the port 16768
