@@ -286,7 +286,6 @@ flowchart LR
     subgraph FE["Nuxt 4 SPA (ssr: false)"]
         Pages["pages / layouts / components"]
         Comp["composables: useApi, useAppAuth + NuxtAuth useAuth"]
-        Nitro["Nitro-сервер<br/>(моки в apiMode=mock)"]
     end
 
     subgraph BE["Spring Boot 4 (модульный монолит)"]
@@ -306,7 +305,6 @@ flowchart LR
     Svc --> PG
     Svc --> MG
     BE -.->|"план: кэш сессий"| RD
-    Nitro -->|"mock: поддельный JWT"| Comp
 ```
 
 ### 7.2. Зоны ответственности
@@ -494,7 +492,7 @@ com.cards
 
 ### 10.3. Что делает клиент
 
-- Токен живёт в cookie, которой управляет NuxtAuth: имя `67cards.<apiMode>.token`, `maxAge` 900 с,
+- Токен живёт в cookie, которой управляет NuxtAuth: имя `67cards.token`, `maxAge` 900 с,
   `secure` включается на https (плагин `00.auth-config.ts`). Раньше токен лежал в `sessionStorage` —
   этот код удалён в PR #8.
 - Данные пользователя берутся из `GET /api/users/me` (а не из claims токена): NuxtAuth вызывает
@@ -539,13 +537,13 @@ com.cards
 | Метод | Путь | Тело | Ответ | Где |
 |---|---|---|---|---|
 | GET | `/api/users/me` | — | `{ id, username, email, role }`, `Cache-Control: no-store` | `UserController` |
-| GET | `/api/users/me` | — | `{ id, email, role }` | `ProfileController` |
 | PATCH | `/api/users/me` | `{ email?, password? }` | `{ id, email, role }` | `ProfileController` |
 | DELETE | `/api/users/me` | — | `204` (удаляет пользователя, его наборы и карточки) | `ProfileController` |
 
-Два контроллера объявляют **один и тот же** `GET /api/users/me` — это конфликт отображения
-(см. §19.1). Плюс `UserController` получает пользователя по `subject` токена как `Long`, а
-`JwtService` кладёт в `subject` email, поэтому `/me` через него вернёт `401`.
+`GET /me` реализован один раз — в `UserController`, который берёт пользователя через
+`CurrentUserService` (по claim `uid`, а не по `subject`). Ранее `ProfileController` дублировал
+этот маршрут (конфликт `Ambiguous mapping`) и `AuthService` парсил email как `Long` (постоянный
+`401`) — оба дефекта устранены. `ProfileController` оставлен для `PATCH`/`DELETE`.
 
 Пустая строка в `email`/`password` в `PATCH` трактуется как «поле не передано» — закреплено тестом.
 `ProfileResponse` не содержит `username`, хотя он есть в сущности: два ответа о «себе» разной формы.
@@ -591,31 +589,33 @@ com.cards
 
 - `ssr: false` — SPA; SSR не нужен (комментарий в требованиях: SSR усложняет и требует Node-сервера).
 - `app.baseURL: '/67-cards/'` — под GitHub Pages; в Docker переопределяется `NUXT_APP_BASE_URL=/`.
-- `runtimeConfig.public.apiBase` (по умолчанию `http://localhost:16768`) и `apiMode` (`mock`).
+- `runtimeConfig.public.apiBase` (адрес бэкенда; по умолчанию `http://127.0.0.1:16768`, позже — env).
 - Модули: `@nuxtjs/tailwindcss`, `@nuxt/eslint`, `@nuxt/icon`, `@nuxt/image`, `@nuxt/scripts`,
   **`@sidebase/nuxt-auth`**, `nuxt-security` (CSRF выключен).
 - Блок `auth`: провайдер `local`, `pages.login: /auth/login`, эндпоинты `signIn → POST /api/auth/login`,
   `signUp → POST /api/auth/register`, `getSession → GET /api/users/me`, `signOut: false`,
   `token.signInResponseTokenPointer: /accessToken`, `maxAgeInSeconds: 900`,
   `disableInternalRouting: true`, обновление сессии при фокусе окна и раз в 60 с.
+- Иконки — **Font Awesome Free** (`@fortawesome/fontawesome-free`), подключён через `css`.
+  Пути API не дублируются: `nuxt.config.ts` берёт их из `utils/apiEndpoints.ts`.
 
-### 12.2. Режимы `mock` и `real`
+### 12.2. Адрес бэкенда и авторизация запросов
 
-| | `mock` | `real` |
-|---|---|---|
-| Куда идут запросы | `app.baseURL` → Nitro-роуты `server/routes/**` | `public.apiBase` → Spring |
-| Проверка пароля | никакой | bcrypt в БД |
-| Токен | литерал `mock-token`, ждёт `Authorization: Bearer mock-token` | подписанный HS256, срок 15 мин |
-| Данные | `/api/users/me` отдаёт фиктивного «Игрока» | Postgres/Mongo |
+Фронт всегда ходит на настоящий Spring-бэкенд: отдельного «мок»-режима нет (заглушки
+`server/routes/**` удалены). Адрес задаётся в `runtimeConfig.public.apiBase` (`nuxt.config.ts`),
+по умолчанию `http://127.0.0.1:16768`; позже будет вынесен в переменную окружения
+`NUXT_PUBLIC_API_BASE`.
 
-Плагин `00.auth-config.ts` (`enforce: 'pre'`) выставляет `auth.baseURL` по `apiMode` и имя cookie
-`67cards.<apiMode>.token`, чтобы демо-токен не попал в настоящий API. Мок-роуты в `real` отдают `404`
-(`mockAuth`).
+- `useApi` (`$fetch.create`) подставляет `baseURL = apiBase` и сам добавляет заголовок
+  `Authorization` из токена NuxtAuth на все запросы, кроме `/api/auth/*`.
+- `auth.baseURL` (для NuxtAuth) выставляется в плагине `00.auth-config.ts` равным `apiBase`;
+  cookie называется `67cards.token`.
+- Все пути и методы — только в `utils/apiEndpoints.ts`; в компонентах и composable'ах вызов
+  идёт строго через `useApi().request(apiEndpoints.xxx.yyy, { body })`, без голых строк-путей.
 
-> Токен теперь живёт в **cookie**, которой управляет NuxtAuth (раньше — `sessionStorage`).
-> Атрибуты `httpOnly` / `sameSite` / `secure` в коде не заданы явно: это надо проверить, потому что
-> токен в читаемой из JS cookie делает XSS сразу утечкой сессии. `secureCookieAttribute` включается
-> только на https.
+> Токен живёт в **cookie**, которой управляет NuxtAuth. Атрибуты `httpOnly` / `sameSite` / `secure`
+> в коде не заданы явно: это надо проверить, потому что токен в читаемой из JS cookie делает XSS
+> сразу утечкой сессии. `secureCookieAttribute` включается только на https.
 
 ### 12.3. Поток данных
 
@@ -639,19 +639,21 @@ com.cards
   не ответил). `register` намеренно не логинит автоматически.
 - **Гварды маршрутов** — `middleware/auth/auth.ts` (защищённые) и `middleware/auth/01.guest.ts`
   (только для гостя; авторизованного уводит на `/`). Префикс `01.` задаёт порядок выполнения.
-- **`layouts/default.vue`** — шапка с кнопкой «Выйти», видимая только авторизованному.
+- **Шапка** — `components/workspace/AppHeader.vue` (логотип + навигация + меню профиля с выходом),
+  рендерится на уровне страниц; `layouts/default.vue` — это только обёртка, `layouts/auth.vue` —
+  минимальная шапка для входа/регистрации.
 
 ### 12.4. Что уже нарисовано
 
 | Маршрут | Файл | Состояние |
 |---|---|---|
-| `/` | `pages/index.vue` | пустая страница за гвардом, только `<main />` |
-| `/auth/login` | `pages/auth/login.vue` → `AuthForm mode="login"` | рабочая форма (почта + пароль) |
-| `/auth/register` | `pages/auth/register.vue` → `AuthForm mode="register"` | форма с именем пользователя, почтой и паролем 8–72; после регистрации — вход |
+| `/` | `pages/index.vue` | дашборд: шапка, приветствие, «недавние» (пустое), «мои коллекции» ← `GET /api/decks` |
+| `/auth/login` | `pages/auth/login.vue` → `AuthForm mode="login"` | форма входа по макету (почта + пароль, Turnstile-заглушка) |
+| `/auth/register` | `pages/auth/register.vue` → `AuthForm mode="register"` | форма регистрации (имя, почта, пароль 8–72); после — авто-вход |
 | `/user/profile` | `pages/user/profile.vue` | пустая разметка |
 
-`AuthForm.vue` — единая форма входа/регистрации, `BaseInput.vue` — единственный базовый контрол.
-Остальные компоненты (кнопки, диалоги, лидерборд и т.д.) ещё не написаны и описаны в дизайн-системе (§13).
+`AuthForm.vue` — единая форма входа/регистрации, `BaseInput.vue` — поле по макету,
+`AppIcon.vue` — иконки Font Awesome. Остальные экраны (карточки, мероприятия, игры) ещё не написаны.
 
 ---
 
@@ -733,10 +735,11 @@ JSON, где есть имена экранов, тексты, токены и �
   `Название коллекции 17`; `Card Editor/Название карточки 38`, `Заголовок на планшете 32`,
   `Вопрос 18`, `Текст карточки 16`, `Элемент управления 15`. В `99` — шкала `Dark Neon/Type/*`
   (Display 58, Game Heading 44, Page Heading 30, Body 17, Meta 13).
-- Иконки: после PR #8 в `docs/design/fonts/` лежит **Font Awesome Free 7.3.1** (regular + solid,
-  вместе с `LICENSE.txt`), Tabler 3.49.0 удалён. Макеты (`00`, `99`) собраны на том же наборе,
-  `DESIGN.md` §22.1 переписан под Font Awesome — набор выбран и задокументирован. В `frontend`
-  иконок пока нет вообще: в коде ни модуля, ни спрайта, ни шрифта.
+- Иконки: в `docs/design/fonts/` лежит **Font Awesome Free 7.3.1** (regular + solid, с `LICENSE.txt`),
+  Tabler 3.49.0 удалён. Макеты (`00`, `99`) собраны на том же наборе, `DESIGN.md` §22.1 переписан
+  под Font Awesome. Во `frontend` иконки подключены как пакет `@fortawesome/fontawesome-free`
+  (CSS/webfont): компонент `AppIcon.vue` рендерит `<i class="fa-...">` по семантическому имени,
+  ручных SVG-путей в коде нет.
 
 ### 13.5. Правила стиля (из `DESIGN.md`)
 
@@ -791,11 +794,10 @@ no access, stale data, «действие принято и заблокиров
 | `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | `credentials.env` → Compose, backend | доступ к БД | обязательны |
 | `POSTGRES_PORT` | `credentials.env` | опубликованный порт Postgres | `5432` (в локальном файле `5433`) |
 | `JWT_SECRET` | `credentials.env` | Base64, ≥ 32 байта | обязателен |
-| `CORS_ALLOWED_ORIGINS` | backend | список origin через запятую | `http://localhost:3000,https://backend-ssnagin.ssngn.ru` |
+| `CORS_ALLOWED_ORIGINS` | backend | список origin через запятую | `http://localhost:3000,http://127.0.0.1:3000,https://backend-ssnagin.ssngn.ru` |
 | `SERVER_PORT` | backend | порт приложения | `8080` |
 | `SPRING_MONGODB_URI` | backend | Mongo URI | `mongodb://localhost:27017/cards` |
-| `NUXT_PUBLIC_API_MODE` | frontend | `mock` / `real` | `mock` |
-| `NUXT_PUBLIC_API_BASE` | frontend | адрес API **без** `/api` | `http://localhost:16768` |
+| `NUXT_PUBLIC_API_BASE` | frontend | адрес бэкенда **без** `/api` | `http://127.0.0.1:16768` |
 | `NUXT_APP_BASE_URL` | frontend | базовый путь (Pages `/67-cards/`, Docker `/`) | `/67-cards/` |
 | `REDIS_*` | backend | конфиг Redis и реплик | — (не используется, см. §19) |
 
@@ -838,13 +840,13 @@ Spring **не читает** `backend/.env` — переменные надо п
 | Файл | Что делает |
 |---|---|
 | `.github/workflows/backend.yml` | создаёт `credentials.env` из секретов, ставит JDK 25, `./gradlew clean build`, копирует `app.jar` + compose + Dockerfile на сервер по SSH, `docker compose down` → `up -d --build`, чистит образы |
-| `.github/workflows/github_pages.yml` | Node 24, `npm ci`, `npm run lint`, `npm run generate` с `apiMode=real` и `apiBase=https://backend-ssnagin.ssngn.ru/67-cards`, выкладка `frontend/.output/public` на GitHub Pages |
+| `.github/workflows/github_pages.yml` | Node 24, `npm ci`, `npm run lint`, `npm run generate` с `apiBase=https://backend-ssnagin.ssngn.ru`, выкладка `frontend/.output/public` на GitHub Pages |
 
 Следствия, которые важно помнить:
 
 - **Пуш в `main` = выкладка.** Плана «сначала проверить, потом релизить» пока нет; PLAN.md требует
   разделить это в 67C-14. Работайте в `dev`/ветках, `main` — релизная.
-- Frontend на Pages — статика: серверных моков там нет, поэтому выкладка всегда `apiMode=real`.
+- Frontend на Pages — статика; фронт всегда ходит на живой бэкенд по `apiBase`.
 - Backend публикуется только на `127.0.0.1:16768`; внешний доступ — через reverse proxy на хосте
   (HTTPS/WSS, NF.2.5).
 
@@ -937,23 +939,14 @@ Spring **не читает** `backend/.env` — переменные надо п
 
 ### 19.1. Critical — ломает работу
 
-1. **Два контроллера на один `GET /api/users/me`.** `UserController.me()` и `ProfileController.me()`
-   объявляют одинаковый маршрут под одинаковым `@RequestMapping("/api/users")`. Spring падает на
-   старте с `IllegalStateException: Ambiguous mapping` — приложение не поднимется, пока один из
-   маршрутов не убран или не перенесён. *Предложение:* оставить один `GET /me` (в `UserController`,
-   с `UserResponse`), а `PATCH`/`DELETE` держать в `ProfileController` и выровнять формат ответа.
-2. **`AuthService` не компилируется.** В `getCurrentUser` используются `ResponseStatusException`
-   и `HttpStatus`, но нет импортов `org.springframework.web.server.ResponseStatusException`
-   и `org.springframework.http.HttpStatus`. *Проверено чтением; сборку запустить не удалось
-   (gradle в песочнице не имеет доступа к `~/.gradle`), поэтому статус — «требует подтверждения
-   `./gradlew build`».*
-3. **`/me` всегда `401` по логике `UserController`.** `getCurrentUser` парсит `authentication.getName()`
-   как `Long`, а `JwtService` кладёт в `subject` email. `Long.parseLong("a@b.c")` → `NumberFormatException`
-   → `401`. Правильно: брать claim `uid` (как делает `CurrentUserService`) либо класть в `subject`
-   численный id. Пока не исправлено, NuxtAuth не сможет получить сессию, и вход будет «успешным»
-   только формально.
-4. **CORS не покрывает прод-фронтенд.** `app.cors.allowed-origins` по умолчанию содержит
-   `http://localhost:3000` и `https://backend-ssnagin.ssngn.ru`, а фронт на Pages живёт на
+1. ✅ **Решено:** дубль `GET /api/users/me` убран — маршрут оставлен только в `UserController`
+   (возвращает `UserResponse` через `CurrentUserService`), в `ProfileController` остались
+   `PATCH`/`DELETE`.
+2. ✅ **Решено:** `AuthService` компилируется — сломанный метод `getCurrentUser` удалён,
+   сборка `./gradlew build` зелёная, тесты проходят.
+3. ✅ **Решено:** `/me` больше не парсит email как `Long` — пользователь достаётся по claim `uid`.
+4. **CORS не покрывает прод-фронтенд.** `app.cors.allowed-origins` содержит `localhost:3000`,
+   `127.0.0.1:3000` и `https://backend-ssnagin.ssngn.ru`, а фронт на Pages живёт на
    `https://ssnagin.github.io`. Любой запрос с Pages к API будет отклонён браузером, пока origin
    не добавлен в `CORS_ALLOWED_ORIGINS` на сервере. *Предложение:* сделать значение обязательной
    переменной окружения на хосте и внести туда Pages-origin; локальный дефолт оставить только для dev.
@@ -1008,14 +1001,12 @@ Spring **не читает** `backend/.env` — переменные надо п
    backend 16768». Нужно одно значение; в плане это 67C-07.
 2. **`/api` против `/api/v1`.** PLAN.md фиксирует `/api/v1`, код работает на `/api`. Пока не поздно —
    либо принять план, либо поправить план. Смена версии позже сломает Pages-фронт.
-3. **Шрифт.** `tailwind.config.ts` объявляет `Inter`, `fonts.css` пуст, дизайн-документ требует
-   Onest + Unbounded, файлы шрифтов уже лежат в `docs/design/fonts/` (там же теперь Font Awesome).
-   Код и дизайн разошлись.
+3. **Шрифт.** ✅ Решено: в коде подключены Onest (sans) и Unbounded (display) через переменные
+   начертания, `fonts.css` заполнен, `tailwind.config.ts` ссылается на них.
 4. **`docs/design/DESIGN.md` описывает Figma, а макеты — FigCraft.** Формулировки «Figma frames»
    устарели; при этом `AGENTS.md` требует хранить дизайн в `docs/design` — это соблюдено.
-5. **Мок-режим и `baseURL`.** Запросы моков идут на `config.app.baseURL`, то есть `/67-cards/api/...`.
-   В Docker baseURL `/`, всё сходится; в dev с `/67-cards/` моки могут не отвечать, если Nitro не
-   монтирует роуты под baseURL. Проверить при первом запуске `npm run dev` в `mock`.
+5. ✅ Мок-режим удалён целиком (заглушки `server/routes/**` и `apiMode` больше нет); вопрос с
+   `baseURL` снят — фронт всегда ходит на `apiBase`.
 6. **Дублирующиеся зависимости** в `backend/build.gradle.kts`: `spring-boot-starter-test` и
    `junit-platform-launcher` объявлены дважды. В `SecurityConfig` продублированы импорты
    (`Value`, `Arrays`, `List`, CORS-классы). Мелочь, но мусор.
@@ -1029,9 +1020,7 @@ Spring **не читает** `backend/.env` — переменные надо п
 
 1. **`profile.vue`** импортирует middleware как `useAuth` (имя вводит в заблуждение — это гвард,
    а не composable) и содержит пустой `<style>`. ESLint уже ругался на `html-self-closing`.
-2. **`useApi.ts`** хранит большой комментарий-пример и исторические пояснения про cookie/CSRF;
-   полезно сохранить как историю решения, но файл стоит почистить перед сдачей.
-3. **`application.properties`**: два блока `# LOGGING` подряд, `logging.logback.rollingpolicy.*`
+2. **`application.properties`**: два блока `# LOGGING` подряд, `logging.logback.rollingpolicy.*`
    без указания размера file appender'а — проверить, что ротация вообще применяется.
 
 ### 19.5. Дизайн: расхождения макетов, документации и кода
@@ -1046,18 +1035,14 @@ Spring **не читает** `backend/.env` — переменные надо п
    пусты, а `00` содержит только иконки. Новый человек, читая §4, идёт не туда. *Предложение:*
    переписать §4 под фактический состав: `01_Design` — рабочий, `00` — иконки, `01`/`02` —
    «не начато».
-3. **Палитра кода не равна палитре макета.** Primary `#6366f1` против `#7C3AED`, фон `#1e1e24`
-   против `#0A0712`, плюс отсутствующие токены `Raised`, `Blue`, `Warning`, `Hover` (§13.3).
-   Вёрстка по макету на текущих токенах даст другой цвет. *Предложение:* перенести 14 переменных
-   из `01_Design` в `main.css`/`tailwind.config.ts` одной задачей и зафиксировать соответствие.
+3. **Палитра.** ✅ Решено: токены `01_Design` перенесены в `main.css`/`tailwind.config.ts`
+   (canvas `#0A0712`, primary `#7C3AED`, danger `#FF5C75`, warning `#FFC857` и др.).
 4. **`00_UI_Kit__Foundations__Brandbook` не содержит фундамента.** Внутри — только лист иконок
    Font Awesome в двух темах; палитры, шкалы типографики, сетки и компонентов там нет. Роль
    «UI kit» фактически выполняет `01_Design` (переменные, стили, компонент-сеты «Кнопка
    редактирования», «Блок карточки»).
-5. **Иконки выбраны, но не перенесены в код.** PR #8 удалил Tabler и добавил Font Awesome Free
-   7.3.1 в `docs/design/fonts/` с лицензией, `DESIGN.md` §22.1 обновлён под него. Но во `frontend`
-   нет ни модуля иконок, ни шрифта/спрайта, `tailwind.config.ts` про них не знает. Пока иконки
-   живут только в макетах.
+5. **Иконки.** ✅ Решено: Font Awesome Free подключён как пакет `@fortawesome/fontawesome-free`,
+   `AppIcon.vue` рендерит `<i class="fa-...">` по имени, ручных SVG-путей нет.
 
 ### 19.6. Открытые продуктовые вопросы (не решены владельцем)
 
