@@ -16,3 +16,10 @@ export type DeckPage = {
   number: number
   size: number
 }
+
+// Тело запроса на создание коллекции (POST /api/decks). title обязателен, description опционален.
+export type CreateDeckPayload = {
+  title: string
+  description?: string
+  isPublic: boolean
+}

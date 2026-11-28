@@ -1,6 +1,6 @@
 import { useApi } from '~/composables/api/useApi'
 import { apiEndpoints } from '~/utils/apiEndpoints'
-import type { Deck } from '~/types/content/deck'
+import type { Deck, CreateDeckPayload } from '~/types/content/deck'
 
 // Данные рабочего пространства для дашборда.
 //
@@ -36,5 +36,12 @@ export function useWorkspace() {
     }
   }
 
-  return { collections, recentCards, recentCardsAvailable, pending, error, refresh }
+  async function createDeck(payload: CreateDeckPayload) {
+    const deck = await api.request(apiEndpoints.decks.create, { body: payload })
+    // После создания перечитываем список, чтобы новая коллекция оказалась на месте.
+    await refresh()
+    return deck
+  }
+
+  return { collections, recentCards, recentCardsAvailable, pending, error, refresh, createDeck }
 }

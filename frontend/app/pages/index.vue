@@ -13,7 +13,48 @@ definePageMeta({
 useHead({ title: '67 Cards — Рабочее пространство' })
 
 const { user } = useAppAuth()
-const { collections, recentCards, pending, error, refresh } = useWorkspace()
+const { collections, recentCards, pending, error, refresh, createDeck } = useWorkspace()
+
+// --- Создание коллекции ---
+const creating = ref(false)
+const newTitle = ref('')
+const newDescription = ref('')
+const savingDeck = ref(false)
+const deckError = ref('')
+
+function openCreate() {
+  creating.value = true
+  newTitle.value = ''
+  newDescription.value = ''
+  deckError.value = ''
+}
+
+function cancelCreate() {
+  creating.value = false
+  newTitle.value = ''
+  newDescription.value = ''
+  deckError.value = ''
+}
+
+async function submitDeck() {
+  const title = newTitle.value.trim()
+  if (!title) {
+    deckError.value = 'Укажите название коллекции.'
+    return
+  }
+  savingDeck.value = true
+  deckError.value = ''
+  try {
+    await createDeck({ title, description: newDescription.value.trim(), isPublic: false })
+    creating.value = false
+    newTitle.value = ''
+    newDescription.value = ''
+  } catch {
+    deckError.value = 'Не удалось создать коллекцию.'
+  } finally {
+    savingDeck.value = false
+  }
+}
 
 onMounted(() => refresh())
 </script>
@@ -72,11 +113,58 @@ onMounted(() => refresh())
       <section class="mt-8" aria-labelledby="collections-heading">
         <div class="flex items-center justify-between">
           <h2 id="collections-heading" class="text-[26px] font-semibold leading-[33px] text-content">Мои коллекции</h2>
-          <button type="button" class="inline-flex min-h-11 items-center gap-2.5 text-[16px] font-medium text-link hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
-            Все коллекции
-            <AppIcon name="arrow-right" :size="24" />
+          <button
+            v-if="!creating"
+            type="button"
+            class="inline-flex min-h-11 items-center gap-2 rounded-control bg-brand-primary px-4 py-2 text-[15px] font-semibold text-content hover:bg-brand-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+            @click="openCreate"
+          >
+            <AppIcon name="plus" :size="18" />
+            Создать коллекцию
           </button>
         </div>
+
+        <!-- Форма создания коллекции -->
+        <form v-if="creating" class="mt-4 rounded-control bg-surface p-6" @submit.prevent="submitDeck">
+          <label for="new-deck-title" class="mb-2 block text-[14px] font-medium text-content">Название</label>
+          <input
+            id="new-deck-title"
+            v-model="newTitle"
+            type="text"
+            maxlength="200"
+            class="mb-5 min-h-12 w-full rounded-control border border-divider bg-canvas px-3.5 py-3 text-[15px] leading-5 text-content placeholder:text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            placeholder="Например, История Санкт-Петербурга"
+            :disabled="savingDeck"
+          >
+          <label for="new-deck-description" class="mb-2 block text-[14px] font-medium text-content">Описание</label>
+          <textarea
+            id="new-deck-description"
+            v-model="newDescription"
+            rows="2"
+            maxlength="2000"
+            class="mb-5 min-h-12 w-full resize-y rounded-control border border-divider bg-canvas px-3.5 py-3 text-[15px] leading-5 text-content placeholder:text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            placeholder="Необязательно"
+            :disabled="savingDeck"
+          />
+          <p v-if="deckError" class="mb-4 text-[14px] text-danger" role="alert"><span aria-hidden="true">⚠ </span>{{ deckError }}</p>
+          <div class="flex items-center gap-3">
+            <button
+              type="submit"
+              class="inline-flex min-h-11 items-center gap-2 rounded-control bg-brand-primary px-5 py-2.5 text-[15px] font-semibold text-content hover:bg-brand-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus disabled:cursor-wait disabled:opacity-60"
+              :disabled="savingDeck || !newTitle.trim()"
+            >
+              {{ savingDeck ? 'Создаём…' : 'Создать' }}
+            </button>
+            <button
+              type="button"
+              class="min-h-11 rounded-control px-4 py-2.5 text-[15px] font-medium text-muted hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+              :disabled="savingDeck"
+              @click="cancelCreate"
+            >
+              Отмена
+            </button>
+          </div>
+        </form>
 
         <!-- Пустое -->
         <div v-if="!pending && collections.length === 0" class="mt-4 flex h-[96px] items-center justify-center rounded-control border border-dashed border-divider text-[15px] text-muted">
@@ -85,7 +173,14 @@ onMounted(() => refresh())
 
         <!-- Список: строки идут вплотную, разделены 1px-линией (как в макете) -->
         <div v-else class="mt-4 flex flex-col">
-          <CollectionRow v-for="(deck, i) in collections" :key="deck.id" :deck="deck" :divider="i > 0" />
+          <NuxtLink
+            v-for="(deck, i) in collections"
+            :key="deck.id"
+            :to="{ path: `/decks/${deck.id}`, query: { title: deck.title } }"
+            class="relative flex h-[62px] items-center rounded-control bg-surface hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <CollectionRow :deck="deck" :divider="i > 0" />
+          </NuxtLink>
         </div>
       </section>
     </main>
