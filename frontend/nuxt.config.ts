@@ -1,4 +1,6 @@
 import { createRequire } from 'node:module'
+// Пути API живут в одном месте — utils/apiEndpoints.ts, а не дублируются здесь.
+import { apiEndpoints } from './app/utils/apiEndpoints'
 
 // Используем nesting из Tailwind, который установлен для Nuxt-модуля.
 const require = createRequire(import.meta.url)
@@ -29,17 +31,18 @@ export default defineNuxtConfig({
   ],
 
   auth: {
-    baseURL: '/',
+    // Реальный адрес бэкенда задаётся в плагине 00.auth-config.ts из runtimeConfig.apiBase.
+    baseURL: '',
     disableInternalRouting: true,
     sessionRefresh: { enableOnWindowFocus: true, enablePeriodically: 60000 },
     provider: {
       type: 'local',
       pages: { login: '/auth/login' },
       endpoints: {
-        signIn: { path: '/api/auth/login', method: 'post' },
-        signUp: { path: '/api/auth/register', method: 'post' },
+        signIn: { path: apiEndpoints.auth.login.path, method: 'post' },
+        signUp: { path: apiEndpoints.auth.register.path, method: 'post' },
         signOut: false,
-        getSession: { path: '/api/users/me', method: 'get' },
+        getSession: { path: apiEndpoints.users.me.path, method: 'get' },
       },
       token: { signInResponseTokenPointer: '/accessToken', maxAgeInSeconds: 900 },
       session: { dataType: { id: 'number', username: 'string', email: 'string', role: 'string' } },
@@ -51,10 +54,21 @@ export default defineNuxtConfig({
     csrf: false,
   },
 
-  css: ['~/assets/css/main.css'],
+  css: [
+    '~/assets/css/main.css',
+    // Иконки — Font Awesome (webfont), без ручных SVG-путей.
+    '@fortawesome/fontawesome-free/css/all.css',
+  ],
 
   app: {
     baseURL: "/67-cards/"
+  },
+
+  // Dev-сервер слушает только IPv4 (127.0.0.1): на части Windows-машин «localhost»
+  // резолвится в IPv6 (::1), и фронт/бэкенд не видят друг друга по IPv4.
+  devServer: {
+    host: '127.0.0.1',
+    port: 3000,
   },
 
   experimental: {
@@ -62,11 +76,9 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-
     public: {
-      apiBase: 'http://localhost:16768',
-      apiMode: 'mock',
-      
+      // Адрес бэкенда. Позже вынесем в переменную окружения (NUXT_PUBLIC_API_BASE).
+      apiBase: 'http://127.0.0.1:16768',
     }
   }
 })

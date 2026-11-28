@@ -1,0 +1,18 @@
+/* Шрифты проекта (из docs/design/fonts): Onest — интерфейсный, Unbounded — акцидентный.
+   Используем переменные начертания (Variable), чтобы покрыть все нужные веса. */
+
+@font-face {
+  font-family: 'Onest';
+  src: url('../fonts/Onest-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Unbounded';
+  src: url('../fonts/Unbounded-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

@@ -13,25 +13,32 @@ export default {
   ],
   theme: {
     extend: {
-      // Сюда переносим токены из Figma
+      // Токены дизайна из 01_Design.figcraft — см. assets/css/main.css.
       colors: {
+        canvas: 'var(--color-canvas)',
         surface: 'var(--color-surface)',
+        raised: 'var(--color-raised)',
+        divider: 'var(--color-divider)',
         content: 'var(--color-text)',
         muted: 'var(--color-muted)',
-        error: 'var(--color-error)',
-        control: 'var(--color-control)',
-        divider: 'var(--color-divider)',
-        focus: 'var(--color-focus)',
         link: 'var(--color-link)',
+        focus: 'var(--color-focus)',
+        danger: 'var(--color-danger)',
+        warning: 'var(--color-warning)',
+        blue: 'var(--color-blue)',
+        magenta: 'var(--color-magenta)',
         brand: {
-          dark: 'var(--color-bg)',
-          primary: 'var(--color-primary)', // Например, ваш главный фиолетовый из Figma
-          accent: 'var(--color-accent)',
-        }
+          primary: 'var(--color-primary)',
+          'primary-hover': 'var(--color-primary-hover)',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'], // Основной шрифт проекта
-      }
+        sans: ['Onest', 'sans-serif'],       // основной интерфейсный шрифт
+        display: ['Unbounded', 'sans-serif'], // акцидентный (логотип, код комнаты, таймер)
+      },
+      borderRadius: {
+        control: 'var(--radius-control)',
+      },
     },
   },
   plugins: [],
