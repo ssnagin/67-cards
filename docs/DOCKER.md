@@ -81,6 +81,18 @@ Spring не читает `backend/.env` автоматически. Переме
 `SPRING_MONGODB_URI=mongodb://localhost:27017/cards`.
 По умолчанию backend слушает 8080; порт 16768 публикует Compose.
 
+В PowerShell из папки `backend` можно загрузить переменные из корневого файла
+перед `./gradlew bootRun`:
+
+```powershell
+Get-Content ..\credentials.env | ForEach-Object {
+    if ($_ -match '^\s*([^#=]+)=(.*)$') {
+        Set-Item -Path "Env:$($matches[1])" -Value $matches[2]
+    }
+}
+./gradlew bootRun
+```
+
 ## Nuxt в локальном Compose
 
 `frontend/Dockerfile` выполняет `npm ci` и `npm run build` на Node 22,
@@ -90,6 +102,8 @@ Spring не читает `backend/.env` автоматически. Переме
 
 Сервис `frontend` закомментирован и не запускается общим `up -d --build`.
 При локальном запуске Nuxt для работы с backend задайте в `frontend/.env`
-`NUXT_PUBLIC_API_MODE=real` и `NUXT_PUBLIC_API_BASE=http://localhost:16768`.
-Браузер обращается к этому адресу на локальной машине. Для GitHub Pages
+`NUXT_PUBLIC_API_BASE=http://127.0.0.1:8080`, если backend запущен через
+`bootRun`. При запуске backend в Compose используйте
+`NUXT_PUBLIC_API_BASE=http://127.0.0.1:16768`. Браузер обращается к этому
+адресу на локальной машине. Для GitHub Pages
 исходный base URL `/67-cards/` сохранён.
